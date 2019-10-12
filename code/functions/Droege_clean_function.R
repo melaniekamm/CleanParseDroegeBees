@@ -166,7 +166,7 @@ data$SampleType[grepl(data$note, pattern= "hand net")] <- 'hand net'
 data$SampleType[grepl(data$field_note, pattern= "hand collected") | data$field_note == 'hand net' | 
                   grepl(data$field_note, pattern= "hand caught") | grepl(data$field_note, pattern= "netted")| grepl(data$field_note, pattern= "caught by hand")] <- 'hand net'
 
-#remove rows with duplicated identifiers (duplicate specimens) that were added somewhere in cleaning process
+#remove rows with duplicated identifiers (duplicate specimens)
 data <- dplyr::filter(data, !duplicated(identifier))
 
 return(data)

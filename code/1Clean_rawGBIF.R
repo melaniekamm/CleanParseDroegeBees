@@ -16,7 +16,8 @@ occur <-  tidyr::separate(data=occur, col=samplingProtocol, sep=";", into=c('Sam
           tidyr::separate(col=verbatimEventDate, into=c("time1", 'time2'), sep=";") %>%
           tidyr::separate(col=eventRemarks, sep="Field_Notes:", into=c('todelete', "field_note")) %>% 
           dplyr::select(-todelete) %>%
-          tidyr::separate(col=field_note, sep="Note:", into=c("field_note", "note"))
+          tidyr::separate(col=field_note, sep="Note:", into=c("field_note", "note")) %>%
+          dplyr::mutate(orig_field_note = field_note, orig_note = note)
 
 #remove column name from data contained within each column (only applies to separated columns)
 find_string <- paste0(paste0(names(occur), ":", collapse="|"), paste("|trapType:", "trapCount:", "trapVolume:", "trapColor:", 
@@ -32,8 +33,11 @@ for (i in c(19:23, 27:28)){
 #rename columns to match older version of GBIF dataset (rest of workflow uses these names)
 #remove unneeded columns
 data <- occur %>%
-        dplyr::rename(elevation=verbatimElevation, longitude=verbatimLongitude, latitude=verbatimLatitude, SPECIMEN= catalogNumber, name=scientificName, state=stateProvince) %>%
-        dplyr::select(-c(language:occurrenceID), -recordNumber, -recordedBy, -samplingEffort,-c(lifeStage:associatedReferences), -verbatimLocality, -verbatimDepth, -geodeticDatum, -coordinatePrecision, -dateIdentified, -kingdom, -vernacularName, -taxonRemarks)
+        dplyr::rename(elevation=verbatimElevation, longitude=verbatimLongitude, latitude=verbatimLatitude, 
+                      SPECIMEN= catalogNumber, name=scientificName, state=stateProvince) %>%
+        dplyr::select(-c(language:occurrenceID), -recordNumber, -recordedBy, -samplingEffort,
+                      -c(lifeStage:associatedReferences), -verbatimLocality, -verbatimDepth, -geodeticDatum, 
+                      -coordinatePrecision, -dateIdentified, -kingdom, -vernacularName, -taxonRemarks)
 
 
 ##### Part Two: Use TimeDate functions to process Droege start and end time into R readable time and date
@@ -43,7 +47,7 @@ data <- occur %>%
 source('./code/functions/TimeDate_functions.R'); source('./code/functions/RunTimeDateExtract.R')
 
 #this code outputs  'startdate.csv', 'enddate.csv', etc files
-format_timedates(data=data, outputfolder = './data/alldata_dates', dotime=F)
+#format_timedates(data=data, outputfolder = './data/alldata_dates', dotime=F)
 
 
 ##### Part Three: Merge previous info, add necessary ID variables
