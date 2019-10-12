@@ -14,4 +14,4 @@ A general overview of our data cleaning process is as follows:
 Original Data are from:
 >Droege S, Sellers E (2017). USGS PWRC - Native Bee Inventory and Monitoring Lab (BIML). Version 1.5. United States Geological Survey. Occurrence dataset https://doi.org/10.15468/6autvb accessed via GBIF.org on 2018-11-09. 
 
-R Scripts require current versions of data.table, dplyr, plyr, tidyr, reshape2, rgdal, sf, raster, stringr, and XML packages. Code was developed and tested in R version 3.6.0.
+R Scripts require current versions of data.table, dplyr, plyr, tidyr, reshape2, rgdal, sf, raster, stringr, Hmisc, R.utils, and XML packages. Code was developed and tested in R version 3.6.0.
