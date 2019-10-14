@@ -12,7 +12,7 @@ mdde <- dplyr::select(mdde,-X, -V1)
 #Dataset #2: Maryland/Delaware/DC occurences with sampling info
 
 #reorder columns and take out some redundant columns
-storecolor <- dplyr::select(storecolor,-X) %>%
+storecolor_archive <- dplyr::select(storecolor,-X) %>%
               dplyr::select(-TrapVolume, -NTraps,
                             -month, -week, -week2, -biweek, -eventDate, -Nmatch, -VolumesAgree) %>%
               dplyr::select(identifier, id, SPECIMEN, TransectID, SamplEvent, SiteID_Year, SiteID, year,
@@ -33,15 +33,6 @@ transect <- dplyr::rename(transect, TrapColor=Color) %>%
             dplyr::select(TransectID, SamplEvent, SiteID_Year, apis_abund, prop_apis, 
                           TrapVolume, TrapColor, ColorVolume, VolumeSimple, ColorSimple, 
                           trapdays, NTrapsFinal, Abundance, AbundDayTrap)
-
-#Dataset 4: Bee abundance per site-year & site-year sampling method (only occurences with sampling effort)
-#Note: site-year abundance is a MEAN of transect abundance because uneven number of transects/year
-siteyear <- subsum_to_siteyear_transect(df=storecolor, output='siteyear')
-
-#reorder columns and take out some redundant columns
-siteyear <- dplyr::select(siteyear,SiteID_Year, apis_abund, prop_apis, 
-                VolumeSimple, ColorSimple, 
-                trapdays, NTrapsFinal, Abundance, AbundDayTrap)
 
 
 
