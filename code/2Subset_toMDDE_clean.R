@@ -17,7 +17,7 @@ marydel <- st_read(dsn="D:/SpatialData/county_boundaries/cb_2013_us_county_500k.
 
 #make spatial layer of all survey locations and reproject to same CRS as county boundaries
 locations <-  distinct(mdde, SiteID_Year, .keep_all = T) %>%
-  select(SiteID, SiteID_Year, year, latitude, longitude) %>%
+  dplyr::select(SiteID, SiteID_Year, year, latitude, longitude) %>%
   st_as_sf(coords=c('longitude', 'latitude'), crs=4326)
 locations <- st_transform(locations, st_crs(marydel))
 
@@ -29,7 +29,7 @@ locations <- locations[two | locations$SiteID %in% c("Vi1908", "Vi1909", "Vi1913
 
 #subset pan trap data to SiteIDs in Maryland, Delaware, and DC spatial object
 mdde <- filter(mdde, SiteID %in% c(locations$SiteID))
-st_write(locations, './spatial_points/site_sampling_locations4269.shp', delete_layer=T)
+# st_write(locations, './spatial_points/site_sampling_locations4269.shp', delete_layer=T)
 
 
 ##### Part Two: Filter data to pan trapped specimens, take out specimens that aren't bees
