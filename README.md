@@ -1,6 +1,6 @@
 # CleanParseDroegeBees
 
-The goal of these scripts is to clean publically available wild bee occurence data from the United State Geological Survey Native Bee Inventory and Monitoring Lab (USGS BIML).
+The goal of these scripts is to clean publically available wild bee occurence data from the [United State Geological Survey Native Bee Inventory and Monitoring Lab](https://www.usgs.gov/centers/pwrc/science/native-bee-inventory-and-monitoring-lab?qt-science_center_objects=0#qt-science_center_objects).
 A general overview of our data cleaning process is as follows:
 1. remove non-bee occurences
 2. correct mis-spelled species and genus names
