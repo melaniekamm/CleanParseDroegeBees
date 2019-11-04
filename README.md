@@ -1,12 +1,12 @@
 # CleanParseDroegeBees
 
-The goal of these scripts is to clean publicly available wild bee occurence data from the [United State Geological Survey Native Bee Inventory and Monitoring Lab](https://www.usgs.gov/centers/pwrc/science/native-bee-inventory-and-monitoring-lab?qt-science_center_objects=0#qt-science_center_objects).
+The goal of these scripts is to clean publicly available wild bee occurrence data from the [United State Geological Survey Native Bee Inventory and Monitoring Lab](https://www.usgs.gov/centers/pwrc/science/native-bee-inventory-and-monitoring-lab?qt-science_center_objects=0#qt-science_center_objects).
 A general overview of our data cleaning process is as follows:
-1. remove non-bee occurences
+1. remove non-bee occurrences
 2. correct mis-spelled species and genus names
-3. filter occurences to only those sampled with pan traps
+3. filter occurrences to only those sampled with pan traps
 4. create site, site-year, sampling event, and transect identifying variables
-5. filter sites geograpically to Maryland, Delaware, and Washington DC USA
+5. filter sites geographically to Maryland, Delaware, and Washington DC USA
 6. extract pan trap color, volume, number, and number missing from text field notes
 7. summarize pan trapping method (trap color and volume) per transect
 8. calculate bee abundance/day/trap per transect for each species
