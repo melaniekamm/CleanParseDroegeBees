@@ -266,7 +266,8 @@ ntraps_check <-  ungroup(storecolor) %>%
 
 #create Abundance per day and Abundance per trap per day variables
 #subset data to observations that have number of traps reported (from NTraps OR parsed field_note)
-storecolor <-  dplyr::filter(storecolor, NTrapsFinal > 0) %>%
+storecolor2 <-  dplyr::mutate(storecolor, MaxNTraps = if_else(NTrapsFinal == 0, NTraps, as.factor(NTrapsFinal))) %>%
+                dplyr::filter(MaxNTraps > 0) %>%
                 dplyr::mutate(Abundance=as.numeric(Abundance),
                             trapdays= if_else(trapdays == 0, 1, trapdays),  
                             AbundDay=Abundance/trapdays,

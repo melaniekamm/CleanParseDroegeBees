@@ -4,7 +4,7 @@ mdde <- read.csv('./data/Droege_MDDE_cleaned.csv')
 storecolor <- read.csv('./data/Droege_MDDE_subset_withtrapinfo.csv')
 
 source('./code/functions/subsum_to_siteyear_transect.R')
-
+library(dplyr)
 #Dataset #1: All Maryland/Delaware/DC occurences
 #take out some redundant columns
 mdde <- dplyr::select(mdde,-X, -V1)
@@ -34,6 +34,16 @@ transect <- dplyr::rename(transect, TrapColor=Color) %>%
                           TrapVolume, TrapColor, ColorVolume, VolumeSimple, ColorSimple, 
                           trapdays, NTrapsFinal, Abundance, AbundDayTrap)
 
+write.csv(mdde,'./data/to_archive/1OccurrenceLevel_AllBees.csv')
+write.csv(storecolor_archive,'./data/to_archive/2OccurrenceLevel_WithTrapInfo.csv')
+write.csv(transect,'./data/to_archive/3TransectLevel_WithTrapInfo.csv')
 
+#sample for technical validation (check color and volume matches field notes)
+techval <- sample_n(storecolor, size=1000, replace=F) %>%
+           dplyr::select(TransectID, time1, startdate, time2, enddate,
+                         TrapColor, TrapVolume, NTraps, orig_field_note, 
+                         orig_note, TrapVolumeFinal, Nreported, Nparse, 
+                         Nmissing, Nmatch, NTrapsFinal, starts_with('is'), starts_with('n'),
+                        -name, -note)
 
-
+write.csv(techval, './data/technical_validation.csv')
