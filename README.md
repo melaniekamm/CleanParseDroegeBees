@@ -1,4 +1,6 @@
 # CleanParseDroegeBees
+[![DOI](https://zenodo.org/badge/214245995.svg)](https://zenodo.org/badge/latestdoi/214245995)
+
 
 The goal of these scripts is to clean publicly available wild bee occurrence data from the [United State Geological Survey Native Bee Inventory and Monitoring Lab](https://www.usgs.gov/centers/pwrc/science/native-bee-inventory-and-monitoring-lab?qt-science_center_objects=0#qt-science_center_objects).
 A general overview of our data cleaning process is as follows:
