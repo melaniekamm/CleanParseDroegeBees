@@ -7,34 +7,49 @@ source('./code/functions/subsum_to_siteyear_transect.R')
 library(dplyr)
 #Dataset #1: All Maryland/Delaware/DC occurences
 #take out some redundant columns
-mdde <- dplyr::select(mdde,-X, -V1)
-
+mdde_toarchive <- dplyr::select(mdde,-X, -V1, -startdate, -enddate, -middate_num, -mid_DOY, -SPECIMEN,
+                      -month, -week, -week2, -biweek, -eventDate, -trapdays) %>%
+        rename(startdate=startdate_num, enddate=enddate_num, modif_fieldnote=field_note,
+        modif_note=note, field_note=orig_field_note, note=orig_note) %>%
+  dplyr::select(identifier, id, TransectID, SamplEvent,  SiteID, SiteID_Year, year,
+                name, Genus, species, sex, identifiedBy,
+                latitude, longitude, coordinateUncertaintyInMeters,
+                time1, time2, startdate, enddate,
+                trapdays,
+                country, countryCode, state, county, municipality, habitat,
+                coordinateUncertaintyInMeters,
+                field_note, note, modif_fieldnote, modif_note,
+                SampleType, TrapLiquid, TrapColor, TrapVolume, NTraps,
+                everything(),  -elevation)
 #Dataset #2: Maryland/Delaware/DC occurences with sampling info
 
 #reorder columns and take out some redundant columns
 storecolor_archive <- dplyr::select(storecolor,-X) %>%
-              dplyr::select(-TrapVolume, -NTraps,
-                            -month, -week, -week2, -biweek, -eventDate, -Nmatch, -VolumesAgree) %>%
-              dplyr::select(identifier, id, SPECIMEN, TransectID, SamplEvent, SiteID_Year, SiteID, year,
+              dplyr::select(-month, -week, -week2, -biweek, -eventDate, -Nmatch, -VolumesAgree,
+                            -startdate, -enddate, -middate_num, -mid_DOY, -SPECIMEN, -Nreported) %>%
+              rename(startdate=startdate_num, enddate=enddate_num, modif_fieldnote=field_note,
+                     modif_note=note, field_note=orig_field_note, note=orig_note) %>%
+              dplyr::select(identifier, id, TransectID, SamplEvent,  SiteID, SiteID_Year, year,
                             name, Genus, species, sex, identifiedBy,
-                            latitude, longitude,
-                            time1, time2, startdate, startdate_num, enddate, enddate_num,
-                            middate_num, mid_DOY, trapdays,
+                            latitude, longitude, coordinateUncertaintyInMeters,
+                            time1, time2, startdate, enddate,
+                            trapdays,
                             country, countryCode, state, county, municipality, habitat,
                             coordinateUncertaintyInMeters,
-                            field_note, note, orig_field_note, orig_note,
+                            field_note, note, modif_fieldnote, modif_note,
+                            SampleType, TrapLiquid, TrapColor, TrapVolume, NTraps,
                             everything(),  -elevation)
 
 #Dataset 3: Bee abundance per transect & transect-level sampling method (only occurences with sampling effort)
 transect <- subsum_to_siteyear_transect(df=storecolor,output='transect')
 
 #reorder columns and take out some redundant columns
-transect <- dplyr::rename(transect, TrapColor=Color) %>%
+transect <- dplyr::rename(transect, TctColor=Color, TctVolume=TrapVolume) %>%
             dplyr::select(TransectID, SamplEvent, SiteID_Year, apis_abund, prop_apis, 
-                          TrapVolume, TrapColor, ColorVolume, VolumeSimple, ColorSimple, 
+                          TctVolume, TctColor, ColorVolume, VolumeSimple, ColorSimple, 
                           trapdays, NTrapsFinal, Abundance, AbundDayTrap)
 
-write.csv(mdde,'./data/to_archive/1OccurrenceLevel_AllBees.csv')
+write.csv(mdde_toarchive,'./data/to_archive/1OccurrenceLevel_AllBees.csv')
 write.csv(storecolor_archive,'./data/to_archive/2OccurrenceLevel_WithTrapInfo.csv')
 write.csv(transect,'./data/to_archive/3TransectLevel_WithTrapInfo.csv')
 
