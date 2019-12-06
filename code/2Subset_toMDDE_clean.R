@@ -5,7 +5,7 @@ library(data.table); library(reshape2); library(rgdal); library(sf); library(dpl
 clean_data <- fread('./data/DroegeAllData_clean.csv')
 
 ##### Part One: Filter occurences to specimens collected in Maryland, Delaware, Washington DC
-# also includes three Virginia sites that were part of a structured sampling
+# also includes three Virginia sites that were part of a structured sampling effort
 mdde <- clean_data
 
 #make site-year ID variable
@@ -25,11 +25,11 @@ locations <- st_transform(locations, st_crs(marydel))
 ###take out spatial points that actually aren't in Maryland, Delaware, or DC
 bound <- st_union(marydel) #dissolve boundaries between counties
 two <- st_within(locations, bound, sparse=F) #store indication of intersection between points and MD/DE boundary
-locations <- locations[two | locations$SiteID %in% c("Vi1908", "Vi1909", "Vi1913", "Vi768",  "Vi769"),]
+locations <- locations[two | locations$SiteID %in% c("Vi1907", "Vi1911", "Vi767",  "Vi768"),]
 
 #subset pan trap data to SiteIDs in Maryland, Delaware, and DC spatial object
 mdde <- filter(mdde, SiteID %in% c(locations$SiteID))
-# st_write(locations, './spatial_points/site_sampling_locations4269.shp', delete_layer=T)
+ #st_write(locations, './spatial_points/site_sampling_locations4269.shp', delete_layer=T)
 
 
 ##### Part Two: Filter data to pan trapped specimens, take out specimens that aren't bees

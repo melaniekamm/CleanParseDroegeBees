@@ -152,7 +152,7 @@ storecolor <-  dplyr::mutate(storecolor, isblue=dplyr::if_else(TrapColor == 'blu
                isFLpaleblue=dplyr::if_else(TrapColor == 'pale blue-uv','FLPaleBlue', "no"))
 
 #identify transects that are missing color information
-trans_check <-  select(storecolor, TransectID, year,state, field_note, note, starts_with('is'), nmissing) %>%
+trans_check <-  dplyr::select(storecolor, TransectID, year,state, field_note, note, starts_with('is'), nmissing) %>%
                 filter(!duplicated(TransectID)) %>%
                 filter( year %in% c('2004', '2005') & state == 'District of Columbia')
 
@@ -266,9 +266,13 @@ ntraps_check <-  ungroup(storecolor) %>%
 
 #create Abundance per day and Abundance per trap per day variables
 #subset data to observations that have number of traps reported (from NTraps OR parsed field_note)
-storecolor2 <-  dplyr::mutate(storecolor, MaxNTraps = if_else(NTrapsFinal == 0, NTraps, as.factor(NTrapsFinal))) %>%
-                dplyr::filter(MaxNTraps > 0) %>%
-                dplyr::mutate(Abundance=as.numeric(Abundance),
+storecolor2 <-  dplyr::mutate(storecolor, MaxNTraps = if_else(NTrapsFinal == 0, NTraps, as.factor(NTrapsFinal)))
+
+storecolor2$MaxNTraps[storecolor2$MaxNTraps %in% c("", "in field note", "UNK")] <- NA
+storecolor2$MaxNTraps <- as.numeric(storecolor2$MaxNTraps)                     
+                     
+storecolor <- dplyr::filter(storecolor2, MaxNTraps > 0) %>%
+              dplyr::mutate(Abundance=as.numeric(Abundance),
                             trapdays= if_else(trapdays == 0, 1, trapdays),  
                             AbundDay=Abundance/trapdays,
                             AbundTrap=Abundance/NTrapsFinal,

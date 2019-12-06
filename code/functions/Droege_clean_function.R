@@ -107,6 +107,8 @@ data$trapdays[!is.na(data$startdate_num) & is.na(data$enddate_num)] <- 0
 #if number of days trap was left out is less than 0, take the opposite (-x), assuming start and end date were reversed
 data$trapdays[data$trapdays < 0 & !is.na(data$trapdays)] <- -data$trapdays[data$trapdays < 0 & !is.na(data$trapdays)]
 
+# sampling sites in the US should have NEGATIVE longitude values, fix longitudes that are > 0
+data$longitude[data$country == 'USA' & data$longitude > 0] <- -data$longitude[data$country == 'USA' & data$longitude > 0]
 
 ### Make site and sampling event identifier variables ###
 gps <- data.frame(identifier=data$identifier,state= data$state,latitude=as.numeric(data$latitude),
