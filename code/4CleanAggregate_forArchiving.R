@@ -9,13 +9,12 @@ library(dplyr)
 #take out some redundant columns
 mdde_toarchive <- dplyr::select(mdde,-X, -V1, -startdate, -enddate, -middate_num, -mid_DOY, -SPECIMEN,
                       -month, -week, -week2, -biweek, -eventDate, -trapdays) %>%
-        rename(startdate=startdate_num, enddate=enddate_num, modif_fieldnote=field_note,
+        dplyr::rename(startdate=startdate_num, enddate=enddate_num, modif_fieldnote=field_note,
         modif_note=note, field_note=orig_field_note, note=orig_note) %>%
   dplyr::select(identifier, id, TransectID, SamplEvent,  SiteID, SiteID_Year, year,
                 name, Genus, species, sex, identifiedBy,
                 latitude, longitude, coordinateUncertaintyInMeters,
                 time1, time2, startdate, enddate,
-                trapdays,
                 country, countryCode, state, county, municipality, habitat,
                 coordinateUncertaintyInMeters,
                 field_note, note, modif_fieldnote, modif_note,
@@ -27,7 +26,7 @@ mdde_toarchive <- dplyr::select(mdde,-X, -V1, -startdate, -enddate, -middate_num
 storecolor_archive <- dplyr::select(storecolor,-X) %>%
               dplyr::select(-month, -week, -week2, -biweek, -eventDate, -Nmatch, -VolumesAgree,
                             -startdate, -enddate, -middate_num, -mid_DOY, -SPECIMEN, -Nreported) %>%
-              rename(startdate=startdate_num, enddate=enddate_num, modif_fieldnote=field_note,
+              dplyr::rename(startdate=startdate_num, enddate=enddate_num, modif_fieldnote=field_note,
                      modif_note=note, field_note=orig_field_note, note=orig_note) %>%
               dplyr::select(identifier, id, TransectID, SamplEvent,  SiteID, SiteID_Year, year,
                             name, Genus, species, sex, identifiedBy,
