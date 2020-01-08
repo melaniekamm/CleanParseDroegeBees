@@ -8,11 +8,11 @@ library(dplyr)
 #Dataset #1: All Maryland/Delaware/DC occurences
 #take out some redundant columns
 mdde_toarchive <- dplyr::select(mdde,-X, -V1, -startdate, -enddate, -middate_num, -mid_DOY, -SPECIMEN,
-                      -month, -week, -week2, -biweek, -eventDate, -trapdays) %>%
+                -month, -week, -week2, -biweek, -eventDate, -trapdays, -species) %>%
         dplyr::rename(startdate=startdate_num, enddate=enddate_num, modif_fieldnote=field_note,
-        modif_note=note, field_note=orig_field_note, note=orig_note) %>%
-  dplyr::select(identifier, id, TransectID, SamplEvent,  SiteID, SiteID_Year, year,
-                name, Genus, species, sex, identifiedBy,
+                modif_note=note, field_note=orig_field_note, note=orig_note) %>%
+        dplyr::select(identifier, id, TransectID, SamplEvent,  SiteID, SiteID_Year, year,
+                name, Genus, sex, identifiedBy,
                 latitude, longitude, coordinateUncertaintyInMeters,
                 time1, time2, startdate, enddate,
                 country, countryCode, state, county, municipality, habitat,
@@ -20,16 +20,17 @@ mdde_toarchive <- dplyr::select(mdde,-X, -V1, -startdate, -enddate, -middate_num
                 field_note, note, modif_fieldnote, modif_note,
                 SampleType, TrapLiquid, TrapColor, TrapVolume, NTraps,
                 everything(),  -elevation)
+
 #Dataset #2: Maryland/Delaware/DC occurences with sampling info
 
 #reorder columns and take out some redundant columns
 storecolor_archive <- dplyr::select(storecolor,-X) %>%
-              dplyr::select(-month, -week, -week2, -biweek, -eventDate, -Nmatch, -VolumesAgree,
+              dplyr::select(-month, -week, -week2, -biweek, -eventDate, -Nmatch, -VolumesAgree, 
                             -startdate, -enddate, -middate_num, -mid_DOY, -SPECIMEN, -Nreported) %>%
               dplyr::rename(startdate=startdate_num, enddate=enddate_num, modif_fieldnote=field_note,
                      modif_note=note, field_note=orig_field_note, note=orig_note) %>%
               dplyr::select(identifier, id, TransectID, SamplEvent,  SiteID, SiteID_Year, year,
-                            name, Genus, species, sex, identifiedBy,
+                            name, Genus, sex, identifiedBy,
                             latitude, longitude, coordinateUncertaintyInMeters,
                             time1, time2, startdate, enddate,
                             trapdays,
@@ -53,11 +54,11 @@ write.csv(storecolor_archive,'./data/to_archive/2OccurrenceLevel_WithTrapInfo.cs
 write.csv(transect,'./data/to_archive/3TransectLevel_WithTrapInfo.csv')
 
 #sample for technical validation (check color and volume matches field notes)
-techval <- sample_n(storecolor, size=1000, replace=F) %>%
-           dplyr::select(TransectID, time1, startdate, time2, enddate,
-                         TrapColor, TrapVolume, NTraps, orig_field_note, 
-                         orig_note, TrapVolumeFinal, Nreported, Nparse, 
-                         Nmissing, Nmatch, NTrapsFinal, starts_with('is'), starts_with('n'),
-                        -name, -note)
-
-write.csv(techval, './data/technical_validation.csv')
+# techval <- sample_n(storecolor, size=1000, replace=F) %>%
+#            dplyr::select(TransectID, time1, startdate, time2, enddate,
+#                          TrapColor, TrapVolume, NTraps, orig_field_note, 
+#                          orig_note, TrapVolumeFinal, Nreported, Nparse, 
+#                          Nmissing, Nmatch, NTrapsFinal, starts_with('is'), starts_with('n'),
+#                         -name, -note)
+# 
+# write.csv(techval, './data/technical_validation.csv')

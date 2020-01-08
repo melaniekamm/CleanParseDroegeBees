@@ -55,13 +55,17 @@ mdde <- mdde[mdde$Genus %in% isbee$Genus[isbee$IsBee == 'Y' & isbee$NameVerified
 #take out specimens that aren't identifed to species
 mdde <- mdde[!grepl(mdde$name, pattern=" NA"),]
 
+#correct species from outside mid-Atlantic USA
+mdde$name[mdde$name == "Agapostemon angelicus/texanus"] <- "Agapostemon texanus" #Agapostemon angelicus is not found in Mid-Atlantic US
+
+#remove species from outside mid-Atlantic USA
+mdde <- mdde[!mdde$name %in% c('Andrena bruneri', 'Lasioglossum incompletum',
+                               'Megachile apicata','Lasioglossum melanopus',
+                               'Pseudopanurgus rudbeckiae'),]
+
 #take out specimens that were not sampled with pan traps?
 mdde <- mdde[mdde$SampleType %in% c('pan trap', 'in field note'),]
 
-#look at list of most common species
-commonspecies <- data.frame(table(mdde$name)[table(mdde$name) > 20])
-names(commonspecies) <- c('Species', 'Abundance')
-commonspecies <- commonspecies[order(commonspecies$Abundance, decreasing=T),]
 
 #add abundance value
 mdde$Abundance <- 1
@@ -89,5 +93,12 @@ mdde$biweek <- round(mdde$mid_DOY/14, digits=0)
 #reclassify 'year' as a factor rather than integer
 mdde$year <- as.factor(mdde$year)
 
+#remove observations of individuals with names that could not be verified
+wrong_names <- c('Andrena hitchensi','Ceratina callidum','Hylaeus cressonii',
+'Lasioglossum aurata','Lasioglossum carlini','Lasioglossum conjuncta','Lasioglossum kevensi',
+'Lasioglossum perplexa','Melissodes nivalis','Melissodes tineta','Nomada lustrans',
+'Nomada personata','Osmia callinsia','Osmia composita')
+
+mdde <- dplyr::filter(mdde, !name %in% wrong_names)
 
 write.csv(mdde, './data/Droege_MDDE_cleaned.csv')

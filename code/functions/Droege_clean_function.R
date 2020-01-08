@@ -35,31 +35,42 @@ data$name <- gsub(data$name, pattern="\\?", replacement="")
 #fix species mis-spellings
 data$name[data$name == 'Andrena morisonella'] <- 'Andrena morrisonella'
 data$name[data$name == 'Andrena puni'] <- 'Andrena pruni'
-data$name[data$name == 'Augochloropsis metallica_fulgida' | data$name == 'Augochloropsis metallica_metallica'] <- 'Augochloropsis metallica'
-
-data$name[data$name == 'Ceratina deformed_calcarata'] <- 'Ceratina calcarata'
-data$name[data$name == 'Ceratina dupla/mikmaqi/calcarata' | data$name == 'Ceratina calcarata/mikmaqi' | data$name == 'Ceratina dupla/mikmaqi' | data$name == 'Ceratina mikmaqi/calcarata'] <- 'Ceratina calcarata/dupla/mikmaqi'
-data$name[data$name == 'Ceratina miqmaki'] <- 'Ceratina mikmaqi'
-
-data$name[data$name == 'Halictus poeyi/ligatus'] <- 'Halictus ligatus/poeyi'
-data$name[data$name == "Lasioglossum brikmanni"] <- "Lasioglossum birkmanni" 
-
-data$name[data$name == "Nomada sayi/illinoense"] <- "Nomada sayi/illinoensis"
-data$name[data$name == "Osmia atriventis"] <- "Osmia atriventris"
-
-data$name[data$name == "Osmia atriventis"] <- "Osmia atriventris"
-data$name[data$name == "Osmia conjucta"] <- "Osmia conjuncta"
-
 data$name[data$name == "Bombus binaculatus"] <- "Bombus bimaculatus"
 data$name[data$name == "Bombus imaptiens"] <- "Bombus impatiens"
+data$name[data$name == 'Ceratina miqmaki'] <- 'Ceratina mikmaqi'
+data$name[data$name == 'Ceratina deformed_calcarata'] <- 'Ceratina calcarata'
+data$name[data$name == "Lasioglossum brikmanni"] <- "Lasioglossum birkmanni"
+data$name[data$name == "Lasioglossum coeropsis"] <- "Lasioglossum coreopsis"
+data$name[data$name == "Lasioglossum geminum"] <- "Lasioglossum geminatum"
+data$name[data$name == "Nomada luteolodies"] <- "Nomada luteoloides"
+data$name[data$name == "Osmia atriventis"] <- "Osmia atriventris"
+data$name[data$name == "Osmia conjucta"] <- "Osmia conjuncta"
+data$name[data$name == "Nomada sayi/illinoense"] <- "Nomada sayi/illinoensis"
 
+#fix incorrect Genus listed
 data$name[data$name == "Augochlora aurata"] <- "Augochlorella aurata"
+data$Genus[data$name == "Augochlorella aurata"] <- "Augochlorella"
 
-#remove individuals that were only identified to genus?
-data <- data[!(grepl(data$name, pattern= "species") | grepl(data$name, pattern = "sp.") | grepl(data$name, pattern = "_sp") | grepl(data$name, pattern = "interesting") | grepl(data$name, pattern = "male")),]
+data$name[data$name == 'Ceratina dupla/mikmaqi/calcarata' | 
+            data$name == 'Ceratina calcarata/mikmaqi' | 
+            data$name == 'Ceratina dupla/mikmaqi' | 
+            data$name == 'Ceratina mikmaqi/calcarata'] <- 'Ceratina calcarata/dupla/mikmaqi'
+
+#fix duplicate names for occurrences with multiple IDs (list needs to be in same order)
+data$name[data$name == 'Halictus poeyi/ligatus'] <- 'Halictus ligatus/poeyi'
+data$name[data$name == 'Sphecodes cressonii/atlantis'] <- 'Sphecodes atlantis/cressonii'
+
+
+#remove individuals that were only identified to genus
+data <- data[!(grepl(data$name, pattern= "species") | 
+                 grepl(data$name, pattern = "sp.") | 
+                 grepl(data$name, pattern = "_sp") | 
+                 grepl(data$name, pattern = "interesting") | 
+                 grepl(data$name, pattern = "male")),]
 
 #remove Andrena observations recorded to sub-genus, but not species
-data <- data[!data$name %in% c('Andrena (Melandrena)', 'Andrena (Scrapteropsis)', 'Andrena (Trachandrena)'),]
+data <- data[!data$name %in% c('Andrena (Melandrena)', 'Andrena (Scrapteropsis)',
+                               'Andrena (Trachandrena)', 'Andrena melandrena'),]
 
 #remove observations with NA recorded as species (only ID'd to genus)
 data <- data[!is.na(data$species),]
@@ -78,7 +89,8 @@ takeout <- which(is.na(startdate$identifier))
 startdate <- startdate[!takeout,]
 
 #change startdate identifier to match data
-startdate$identifier <- gsub(startdate$identifier, pattern= "http://www.discoverlife.org/mp/20l?id=", replacement="", fixed=T)
+startdate$identifier <- gsub(startdate$identifier, pattern= "http://www.discoverlife.org/mp/20l?id=", 
+                             replacement="", fixed=T)
 
 enddate <- fread(paste(datefolder, '/enddate.csv', sep=""), header=T)
 enddate <- data.table(enddate[,2:4], key='identifier')
