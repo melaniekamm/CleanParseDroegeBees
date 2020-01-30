@@ -5,11 +5,28 @@ clean_things <- function(data, datefolder, remove_togenus){
 
 ##Remove rows lacking lat/long, add identifier
 data <- dplyr::filter(data, !is.na(longitude) & !is.na(latitude)) %>%
+        dplyr::filter(!(abs(latitude) > 90 | abs(longitude) > 180)) %>%
         dplyr::mutate(identifier= as.character(SPECIMEN)) #add identifier column
 
 #add 'identifier' column so time/date functions will work
 data <- data.table(data, key='identifier')
 
+#add state abbreviation column
+#add polygon layer of Maryland, Delaware, Washington DC county boundaries
+states <- sf::st_read(dsn="D:/SpatialData/state_boundaries/cb_2016_us_state_500k.shp")
+
+# sampling sites in the US should have NEGATIVE longitude values, fix longitudes that are > 0
+data$longitude[data$country == 'USA' & data$longitude > 0] <- -data$longitude[data$country == 'USA' & data$longitude > 0]
+
+
+#make spatial layer of all survey locations and reproject to same CRS as state boundaries
+#add state abbreviation code
+locations <-  sf::st_as_sf(data, coords=c('longitude', 'latitude'), crs=4326, remove=F) %>%
+              sf::st_transform(sf::st_crs(states)) %>%
+              sf::st_join(dplyr::select(states, STUSPS)) %>%
+              dplyr::rename(state_code = STUSPS)
+
+data <- st_drop_geometry(locations)
 ####translate date and time, remove occurrences with no recorded date
 
 #import date and time variables in R format
@@ -37,8 +54,8 @@ enddate <- dplyr::filter(enddate, !duplicated(identifier))
 startdate <- dplyr::filter(startdate, !duplicated(identifier))
 
 #merge dates with bee occurrence data
-data <- merge(data, startdate, all.x=T)
-data <- merge(data, enddate, all.x=T)
+data <- dplyr::left_join(data, startdate) %>%
+        dplyr::left_join( enddate)
 
 #remove specimens that do not have a start or end date recorded
 data <- data[!(is.na(data$startdate) & is.na(data$enddate)),]
@@ -56,39 +73,38 @@ data$trapdays[!is.na(data$startdate_num) & is.na(data$enddate_num)] <- 0
 #if number of days trap was left out is less than 0, take the opposite (-x), assuming start and end date were reversed
 data$trapdays[data$trapdays < 0 & !is.na(data$trapdays)] <- -data$trapdays[data$trapdays < 0 & !is.na(data$trapdays)]
 
-# sampling sites in the US should have NEGATIVE longitude values, fix longitudes that are > 0
-data$longitude[data$country == 'USA' & data$longitude > 0] <- -data$longitude[data$country == 'USA' & data$longitude > 0]
 
-### Make site and sampling event identifier variables ###
-gps <- data.frame(identifier=data$identifier,state= data$state,latitude=as.numeric(data$latitude),
-                  longitude=as.numeric(data$longitude), startdate=data$startdate_num, enddate=data$enddate_num,
-                  field_note=data$field_note, note=data$note)
+##### make site, sampling event, and transect ID variables
 
-#calculate unique combinations of lat, long and call these 'sites'
-gps$latlong <- paste(gps$latitude, gps$longitude, sep="_")
-gps <- data.table(gps, key='latlong')
+#hash lat/long to make it slightly shorter, and append to state code
+l <- paste0(data$latitude, data$longitude)
+hl <- hashr::hash(l, recursive=T)
+data$SiteID <- paste0(data$state_code, DescTools::DecToHex(hl))
 
-sites <- gps[which(!duplicated(gps$latlong)),]
-sites$SiteID <- paste(substr(sites$state, start=1, stop=2), c(1:nrow(sites)), sep="")
-sites <- data.table(sites, key='latlong')
+if(!length(unique(hl)) == length(unique(data$SiteID))){
+  stop("something is wrong with site ID hash and encoding.")
+}
 
-sitesub <- dplyr::select(sites, latlong, SiteID)
-gps <- merge(gps, sitesub)
+#sampling event = unique combination of lat/long, start date and end date of sampling
+s <- paste0(data$SiteID, as.numeric(data$startdate_num),as.numeric(data$enddate_num))
+hs <- hashr::hash(s, recursive=T)
 
-#calculate unique combinations of lat, long, and date and call this 'SamplEvent'
-gps$SamplEvent <- paste(gps$SiteID, gps$startdate, gps$enddate, sep="_")
-gps <- data.table(gps, key='identifier')
+data$SamplEvent <- paste0(data$state_code, DescTools::DecToHex(hs))
 
-#calculate unique combinations of 'SamplEvent' and field notes, call this 'TransectID'
-gps$SE_note <- paste(gps$SamplEvent, gps$field_note, gps$note, sep="_")
-transectIDs <- gps[which(!duplicated(gps$SE_note)),]
+if(!length(unique(hs)) == length(unique(data$SamplEvent))){
+  stop("something is wrong with sampling event ID hash and encoding.")
+}
 
-transectIDs$TransectID <- paste(transectIDs$SamplEvent, paste0("T", c(1:nrow(transectIDs))), sep="_")
-gps <- merge(gps, dplyr::select(transectIDs, SE_note, TransectID),by="SE_note")
+t <- paste0(s, data$orig_field_note, data$orig_note)
+ht <- hashr::hash(t, recursive=T)
+
+data$TransectID <- paste0(data$state_code, DescTools::DecToHex(ht))
+
+if(!length(unique(ht)) == length(unique(data$TransectID))){
+  stop("something is wrong with transect ID hash and encoding.")
+}
 
 
-#add SiteID, SamplEvent, and TransectID to dataframe
-data <- merge(data, dplyr::select(gps, identifier, SiteID, SamplEvent, TransectID), by='identifier')
 #add column denoting year of sampling
 data$year <- format(data$startdate_num, format="%Y")
 data$month <- format(data$startdate_num, format="%m")
