@@ -12,7 +12,7 @@ mdde_toarchive <- dplyr::select(mdde,-X, -V1, -startdate, -enddate, -middate_num
         dplyr::rename(startdate=startdate_num, enddate=enddate_num, modif_fieldnote=field_note,
                 modif_note=note, field_note=orig_field_note, note=orig_note) %>%
         dplyr::select(identifier, id, TransectID, SamplEvent,  SiteID, SiteID_Year, year,
-                name, Genus, sex, identifiedBy,
+                name, Genus, species, grouped_name, orig_name, sex, identifiedBy,
                 latitude, longitude, coordinateUncertaintyInMeters,
                 time1, time2, startdate, enddate,
                 country, countryCode, state, county, municipality, habitat,
@@ -30,7 +30,7 @@ storecolor_archive <- dplyr::select(storecolor,-X) %>%
               dplyr::rename(startdate=startdate_num, enddate=enddate_num, modif_fieldnote=field_note,
                      modif_note=note, field_note=orig_field_note, note=orig_note) %>%
               dplyr::select(identifier, id, TransectID, SamplEvent,  SiteID, SiteID_Year, year,
-                            name, Genus, sex, identifiedBy,
+                            name, Genus, species, grouped_name, orig_name, sex, identifiedBy,
                             latitude, longitude, coordinateUncertaintyInMeters,
                             time1, time2, startdate, enddate,
                             trapdays,
