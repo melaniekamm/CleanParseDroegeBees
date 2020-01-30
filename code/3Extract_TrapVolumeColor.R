@@ -7,23 +7,23 @@ library(dplyr); library(tidyr); library(stringr); library(reshape2); library(dat
 mdde <- read.csv('./data/Droege_MDDE_cleaned.csv')
 
 ##### Part One: Manually clean up some string patterns in field notes that cause issues for regular expressions (below)
-view2 <- dplyr::filter(mdde, grepl(mdde$field_note, pattern='road') | grepl(mdde$field_note, pattern='field')) %>%
+view2 <- dplyr::filter(mdde, grepl(mdde$field_note, pattern='road', fixed=T) | grepl(mdde$field_note, pattern='field', fixed=T)) %>%
          dplyr::filter(year == '2005')
 
-view2 <- dplyr::mutate(view2, field_note = gsub(view2$field_note, pattern= " ;", replacement=";")) %>%
-         dplyr::filter(grepl(view2$field_note, pattern= "blue;") | grepl(view2$field_note, pattern= "yellow;") | 
-                  grepl(view2$field_note, pattern= "white;") | grepl(view2$field_note, pattern= "white ;") |
-                   grepl(view2$field_note, pattern= "yellow ;") | grepl(view2$field_note, pattern= "blue ;") |
-                   grepl(view2$field_note, pattern= "white  ;"))
+view2 <- dplyr::mutate(view2, field_note = gsub(view2$field_note, pattern= " ;", replacement=";", fixed=T)) %>%
+         dplyr::filter(grepl(view2$field_note, pattern= "blue;", fixed=T) | grepl(view2$field_note, pattern= "yellow;", fixed=T) | 
+                  grepl(view2$field_note, pattern= "white;", fixed=T) | grepl(view2$field_note, pattern= "white ;", fixed=T) |
+                   grepl(view2$field_note, pattern= "yellow ;", fixed=T) | grepl(view2$field_note, pattern= "blue ;", fixed=T) |
+                   grepl(view2$field_note, pattern= "white  ;", fixed=T))
 
 #manually clean up some string patterns in TransectID and field notes 
-view2 <- dplyr::mutate(view2, TransectID = if_else(grepl(view2$field_note, pattern='road'), paste0(view2$SamplEvent, "Troad"), 
+view2 <- dplyr::mutate(view2, TransectID = if_else(grepl(view2$field_note, pattern='road', fixed=T), paste0(view2$SamplEvent, "Troad"), 
                                             paste0(view2$SamplEvent, "Tfield"))) %>%
-         dplyr::mutate(field_note = dplyr::if_else(TransectID %in% c("Ma1985_2005-09-07_2005-09-08Tfield", "Ma1984_2005-08-21_2005-08-22Tfield",
-                                                       'Ma2130_2005-09-08_2005-09-09Troad', "Ma2153_2005-09-07_2005-09-08Tfield",
-                                                        "Ma2014_2005-09-17_2005-09-18Troad"), "5 white, 5 yellow, 5 blue; 1 missing",
-                                     dplyr::if_else(TransectID %in% c("Ma2218_2005-07-01_2005-07-02Tfield", "Ma2171_2005-09-02_2005-09-03Tfield",
-                                                               "Ma2261_2005-07-02_2005-07-03Tfield"), "5 white, 5 yellow, 5 blue; 2 missing",
+         dplyr::mutate(field_note = dplyr::if_else(TransectID %in% c("Ma2030_2005-09-07_2005-09-08Tfield", 'Ma2177_2005-09-08_2005-09-09Troad', 
+                                                        "Ma2200_2005-09-07_2005-09-08Tfield",
+                                                        "Ma2060_2005-09-17_2005-09-18Troad"), "5 white, 5 yellow, 5 blue; 1 missing",
+                                     dplyr::if_else(TransectID %in% c("Ma2265_2005-07-01_2005-07-02Tfield", "Ma2218_2005-09-02_2005-09-03Tfield",
+                                                               "Ma2308_2005-07-02_2005-07-03Tfield"), "5 white, 5 yellow, 5 blue; 2 missing",
                                      "5 white, 5 yellow, 5 blue; 0 missing")))
 
 #put cleaned up observations back into dataset
@@ -114,22 +114,20 @@ mdde$field_note <- gsub(mdde$field_note, pattern='10 bowls each fl yellow fl blu
           gsub(pattern='dark blue has 6 BOWLs and that white has 7', replacement="6 blue, 7 white", fixed=T)
 
 #same thing for second field notes ('note') column
-mdde$note <-  gsub(mdde$note, pattern='bombus', replacement="BOMBUS") %>%
-        gsub(pattern='15 blue, yellow and white', replacement="5b, 5y, 5w") %>%
-        gsub(pattern='15 blue,yellow and white', replacement="5b, 5y, 5w") %>%
-        gsub(pattern='15 blue yellow and white', replacement="5b, 5y, 5w") %>%
-        gsub(pattern='15 blue, yellow and white', replacement="5b, 5y, 5w") %>%
-        gsub(pattern='15 yellow, blue and white bowls', replacement="5b, 5y, 5w") %>%
-        gsub(pattern='15 yellow,blue and white solo bowls', replacement="5b, 5y, 5w") %>%
-        gsub(pattern='*2 yellow and one blue cups were empty when picking', replacement="3 empty") %>%
-        gsub(pattern='*one cup was empty', replacement="1 empty") %>%
-        gsub(pattern='1 white cup destroyed', replacement="1 empty")
+mdde$note <-  gsub(mdde$note, pattern='bombus', replacement="BOMBUS", fixed=T) %>%
+        gsub(pattern='15 blue, yellow and white', replacement="5b, 5y, 5w", fixed=T) %>%
+        gsub(pattern='15 blue,yellow and white', replacement="5b, 5y, 5w", fixed=T) %>%
+        gsub(pattern='15 blue yellow and white', replacement="5b, 5y, 5w", fixed=T) %>%
+        gsub(pattern='15 blue, yellow and white', replacement="5b, 5y, 5w", fixed=T) %>%
+        gsub(pattern='15 yellow, blue and white bowls', replacement="5b, 5y, 5w", fixed=T) %>%
+        gsub(pattern='15 yellow,blue and white solo bowls', replacement="5b, 5y, 5w", fixed=T) %>%
+        gsub(pattern='*2 yellow and one blue cups were empty when picking', replacement="3 empty", fixed=T) %>%
+        gsub(pattern='*one cup was empty', replacement="1 empty", fixed=T) %>%
+        gsub(pattern='1 white cup destroyed', replacement="1 empty", fixed=T)
 
 #manually fix some transect IDs that are incorrect (assigned as two transects, but actually only one)
-mdde$TransectID[mdde$SamplEvent == 'Ma1896_2002-07-11_2002-07-11'] <- "Ma1896_2002-07-11_2002-07-11_T228"
-mdde$TransectID[mdde$SamplEvent == 'Ma2610_2002-08-25_2002-08-25'] <- "Ma2610_2002-08-25_2002-08-25_T217"
-mdde$TransectID[mdde$SamplEvent == 'De3400_2008-06-04_2008-06-05'] <- "De3400_2008-06-04_2008-06-05_T3109"
-mdde$TransectID[mdde$SamplEvent == 'Ma2020_2013-08-14_2013-08-14'] <- "Ma2020_2013-08-14_2013-08-14_T7765"
+mdde$TransectID[mdde$SamplEvent == 'Ma1942_2002-07-11_2002-07-11'] <- "Ma1942_2002-07-11_2002-07-11_T229"
+mdde$TransectID[mdde$SamplEvent == 'Ma2657_2002-08-25_2002-08-25'] <- "Ma2657_2002-08-25_2002-08-25_T218"
 
 
 ##### Part Two: Extract trap color, trap number, and number of missing traps from field_note and note columns for each specimen
@@ -158,9 +156,9 @@ trans_check <-  dplyr::select(storecolor, TransectID, year,state, field_note, no
 
 #assign colors to a few observations where trap color could be assumed from field notes indicating all specimens were the same study
 #washington dc study field_notes all same style, and other observations record 'b', 'y', 'w' characters in other words as colors
-storecolor$isblue[is.na(storecolor$isblue) & storecolor$year %in% c('2004', '2005') & storecolor$state == 'District of Columbia' & !storecolor$SiteID %in% c('Di1906', 'Di1967', 'Di1894', 'Di1892', 'Di2096', 'Di2113') ]  <- 'blue'
-storecolor$isyellow[is.na(storecolor$isyellow) & storecolor$year %in% c('2004', '2005') & storecolor$state == 'District of Columbia' & !storecolor$SiteID %in% c('Di1906', 'Di1967', 'Di1894', 'Di1892', 'Di2096', 'Di2113') ]  <- 'yellow'
-storecolor$iswhite[is.na(storecolor$iswhite) & storecolor$year %in% c('2004', '2005') & storecolor$state == 'District of Columbia' & !storecolor$SiteID %in% c('Di1906', 'Di1967', 'Di1894', 'Di1892', 'Di2096', 'Di2113') ]  <- 'white'
+storecolor$isblue[is.na(storecolor$isblue) & storecolor$year %in% c('2004', '2005') & storecolor$state == 'District of Columbia' & !storecolor$SiteID %in% c('Di1897', 'Di1955', 'Di1883', 'Di2083', 'Di2100') ]  <- 'blue'
+storecolor$isyellow[is.na(storecolor$isyellow) & storecolor$year %in% c('2004', '2005') & storecolor$state == 'District of Columbia' & !storecolor$SiteID %in% c('Di1897', 'Di1955', 'Di1883', 'Di2083', 'Di2100') ]  <- 'yellow'
+storecolor$iswhite[is.na(storecolor$iswhite) & storecolor$year %in% c('2004', '2005') & storecolor$state == 'District of Columbia' & !storecolor$SiteID %in% c('Di1897', 'Di1955', 'Di1883', 'Di2083', 'Di2100') ]  <- 'white'
 
 storecolor$iswhite[storecolor$note == 'groundworks farm, in wicomico county' & storecolor$field_note == "fl bl;fl yl;white; "] <- 'white'
 storecolor$isFLblue[storecolor$note == 'groundworks farm, in wicomico county' & storecolor$field_note == "fl bl;fl yl;white; "] <- 'FLblue'
