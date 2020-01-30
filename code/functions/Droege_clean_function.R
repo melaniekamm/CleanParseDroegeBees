@@ -156,7 +156,6 @@ data$Genus[data$Genus %in% c("Haclictus", "Halitcus")] <- 'Halictus'
 #add cleaned up genus and species name together
 data$name <- paste(data$Genus, data$species, sep=" ")
 
-
 #fix species mis-spellings
 data$name[data$name == 'Andrena morisonella'] <- 'Andrena morrisonella'
 data$name[data$name == 'Andrena puni'] <- 'Andrena pruni'
@@ -243,7 +242,6 @@ data$grouped_name[data$grouped_name == 'Andrena imitatrix'|
 data$grouped_name[data$grouped_name == 'Andrena erythronii'|
           data$grouped_name == 'Andrena tridens'] <- 'Andrena erythronii/tridens'
 
-
 data$grouped_name[data$grouped_name == 'Ceratina calcarata/dupla'|
           data$grouped_name == 'Ceratina calcarata/mikmaqi' | 
           data$grouped_name == 'Ceratina dupla/mikmaqi'|
@@ -280,7 +278,6 @@ data$grouped_name[data$grouped_name == 'Melissodes agilis'|
 
 data$grouped_name[data$grouped_name == 'Melissodes boltoniae'|
           data$grouped_name == 'Melissodes fumosa'] <- 'Melissodes boltoniae/fumosa'
-
 
 data$grouped_name[data$grouped_name == 'Melissodes illata'|
           data$grouped_name == 'Melissodes subillata'] <- 'Melissodes illata/subillata'
