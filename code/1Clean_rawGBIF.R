@@ -55,7 +55,7 @@ source('./code/functions/TimeDate_functions.R'); source('./code/functions/RunTim
 library(Hmisc); library(R.utils); library(stringr)
 
 source('./code/functions/Droege_clean_function.R')
-clean_data <- clean_things(data=data, datefolder='./data/alldata_dates')
+clean_data <- clean_things(data=data, datefolder='./data/alldata_dates', remove_togenus=F)
 
 write.csv(clean_data, './data/DroegeAllData_clean.csv')
 
