@@ -25,7 +25,7 @@ locations <- st_transform(locations, st_crs(marydel))
 ###take out spatial points that actually aren't in Maryland, Delaware, or DC
 bound <- st_union(marydel) #dissolve boundaries between counties
 two <- st_within(locations, bound, sparse=F) #store indication of intersection between points and MD/DE boundary
-locations <- locations[two | locations$SiteID %in% c("Vi1907", "Vi1911", "Vi767",  "Vi768"),]
+locations <- locations[two,]
 
 #subset pan trap data to SiteIDs in Maryland, Delaware, and DC spatial object
 mdde <- filter(mdde, SiteID %in% c(locations$SiteID))
@@ -53,15 +53,14 @@ isbee <- read.csv('./data/isbee_genera_populated.csv')
 mdde <- mdde[mdde$Genus %in% isbee$Genus[isbee$IsBee == 'Y' & isbee$NameVerified == 'Y'],]
 
 #take out specimens that aren't identifed to species
-mdde <- mdde[!grepl(mdde$name, pattern=" NA"),]
+mdde <- mdde[!grepl(mdde$name, pattern=" NA", fixed=T),]
 
-#correct species from outside mid-Atlantic USA
+#correct or take out species from outside mid-Atlantic USA
 mdde$name[mdde$name == "Agapostemon angelicus/texanus"] <- "Agapostemon texanus" #Agapostemon angelicus is not found in Mid-Atlantic US
+mdde$name[mdde$name == "Pseudopanurgus rudbeckiae"] <- "Pseudopanurgus near rudbeckiae"
 
-#remove species from outside mid-Atlantic USA
-mdde <- mdde[!mdde$name %in% c('Andrena bruneri', 'Lasioglossum incompletum',
-                               'Megachile apicata','Lasioglossum melanopus',
-                               'Pseudopanurgus rudbeckiae'),]
+#species not in our region
+mdde <- mdde[!mdde$name %in% c('Lasioglossum incompletum'),]
 
 #take out specimens that were not sampled with pan traps?
 mdde <- mdde[mdde$SampleType %in% c('pan trap', 'in field note'),]
@@ -72,9 +71,6 @@ mdde$Abundance <- 1
 
 #remove 1999 and 2001 from data, these years have fewer than 10 observations total
 mdde <- mdde[mdde$year > 2001,]
-
-#remove one transect that says it is several sites in field notes, location-based metrics likely not accurate
-mdde <- dplyr::filter(mdde, TransectID != 'Ma1551_2003-04-23_T475')
 
 #convert sampling dates to R 'Date' class
 mdde$startdate_num <- as.Date(mdde$startdate_num); mdde$enddate_num <- as.Date(mdde$enddate_num)
@@ -92,13 +88,5 @@ mdde$biweek <- round(mdde$mid_DOY/14, digits=0)
 
 #reclassify 'year' as a factor rather than integer
 mdde$year <- as.factor(mdde$year)
-
-#remove observations of individuals with names that could not be verified
-wrong_names <- c('Andrena hitchensi','Ceratina callidum','Hylaeus cressonii',
-'Lasioglossum aurata','Lasioglossum carlini','Lasioglossum conjuncta','Lasioglossum kevensi',
-'Lasioglossum perplexa','Melissodes nivalis','Melissodes tineta','Nomada lustrans',
-'Nomada personata','Osmia callinsia','Osmia composita')
-
-mdde <- dplyr::filter(mdde, !name %in% wrong_names)
 
 write.csv(mdde, './data/Droege_MDDE_cleaned.csv')
