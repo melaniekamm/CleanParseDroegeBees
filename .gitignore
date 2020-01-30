@@ -5,6 +5,7 @@
 data/dwca-usgs-pwrc-biml-v1.5/**
 writing/**
 data/**
+data/*.csv
 tables/**
 figures/**
 code/plot_sample_method_by_year.R
