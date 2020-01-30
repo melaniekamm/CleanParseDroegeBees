@@ -1,11 +1,11 @@
 
 clean_things <- function(data, datefolder, remove_togenus){
 
-##Remove rows lacking lat/long or taxonomic ID, add identifier, genus species columns
-data <- dplyr::filter(data, name != '' & SPECIMEN != "" & !is.na(longitude) & !is.na(latitude)) %>%
-        dplyr::distinct(SPECIMEN, .keep_all = T) %>%
-        dplyr::mutate(identifier= as.character(SPECIMEN)) %>% #add identifier column
-        tidyr::separate(name, sep=" ", into=c("Genus", 'species'), remove=F) #add genus and species columns
+#####Part 1: Make site, transect, and sampling event ID variables  
+
+##Remove rows lacking lat/long, add identifier
+data <- dplyr::filter(data, !is.na(longitude) & !is.na(latitude)) %>%
+        dplyr::mutate(identifier= as.character(SPECIMEN)) #add identifier column
 
 #add 'identifier' column so time/date functions will work
 data <- data.table(data, key='identifier')
@@ -119,14 +119,19 @@ data$SampleType[grepl(data$field_note, pattern= "hand collected") | data$field_n
 
 #####fix name, Genus, species columns
 
+#remove occurrences with no species names or duplicated names
+data <- dplyr::filter(data, name != '' & SPECIMEN != "") %>%
+  dplyr::distinct(SPECIMEN, .keep_all = T) %>%
+  tidyr::separate(name, sep=" ", into=c("Genus", 'species'), remove=F) #add genus and species columns
+
 #capitalize genus columns
 data$Genus <- R.utils::capitalize(data$Genus)
 
 #fix capitalization so species names match
 data$species <- R.utils::decapitalize(data$species)
 
-#save Droege original name (useful for occurrences with multiple names)
-data$original_name <- data$name
+#save Droege original name
+data$orig_name <- data$name
 
 #fix spelling errors in genus name
 data$Genus[data$Genus %in% c("Adrena", "Amdrema", "Anderna")] <- 'Andrena'
