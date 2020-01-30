@@ -1,5 +1,5 @@
 
-clean_things <- function(data, datefolder){
+clean_things <- function(data, datefolder, remove_togenus){
 
 ##Remove rows lacking lat/long or taxonomic ID, add identifier, genus species columns
 data <- dplyr::filter(data, name != '' & SPECIMEN != "" & !is.na(longitude) & !is.na(latitude)) %>%
@@ -10,75 +10,7 @@ data <- dplyr::filter(data, name != '' & SPECIMEN != "" & !is.na(longitude) & !i
 #add 'identifier' column so time/date functions will work
 data <- data.table(data, key='identifier')
 
-#add genus columns
-temp <- strsplit(data$name, split=" ")
-data$Genus <- as.character(sapply(temp, '[', 1))
-data$Genus <- R.utils::capitalize(data$Genus)
-
-#add species name column, fix capitalization so species names match
-data$species <- as.character(sapply(temp, '[', 2))
-data$species <- R.utils::decapitalize(data$species)
-
-#fix spelling errors in genus name
-data$Genus[data$Genus %in% c("Adrena", "Amdrema", "Anderna")] <- 'Andrena'
-data$Genus[data$Genus %in% c("Certina")] <- 'Ceratina'
-data$Genus[data$Genus %in% c("Haclictus", "Halitcus")] <- 'Halictus'
-
-#add cleaned up genus and species name together
-data$name <- paste(data$Genus, data$species, sep=" ")
-
-#fix names that include 'near' or ?  or 'group' assume identification was correct
-data$name <- gsub(data$name, pattern="near_", replacement="")
-data$name <- gsub(data$name, pattern="_group", replacement="")
-data$name <- gsub(data$name, pattern="\\?", replacement="")
-
-#fix species mis-spellings
-data$name[data$name == 'Andrena morisonella'] <- 'Andrena morrisonella'
-data$name[data$name == 'Andrena puni'] <- 'Andrena pruni'
-data$name[data$name == "Bombus binaculatus"] <- "Bombus bimaculatus"
-data$name[data$name == "Bombus imaptiens"] <- "Bombus impatiens"
-data$name[data$name == 'Ceratina miqmaki'] <- 'Ceratina mikmaqi'
-data$name[data$name == 'Ceratina deformed_calcarata'] <- 'Ceratina calcarata'
-data$name[data$name == "Lasioglossum brikmanni"] <- "Lasioglossum birkmanni"
-data$name[data$name == "Lasioglossum coeropsis"] <- "Lasioglossum coreopsis"
-data$name[data$name == "Lasioglossum geminum"] <- "Lasioglossum geminatum"
-data$name[data$name == "Nomada luteolodies"] <- "Nomada luteoloides"
-data$name[data$name == "Osmia atriventis"] <- "Osmia atriventris"
-data$name[data$name == "Osmia conjucta"] <- "Osmia conjuncta"
-data$name[data$name == "Nomada sayi/illinoense"] <- "Nomada sayi/illinoensis"
-
-#fix incorrect Genus listed
-data$name[data$name == "Augochlora aurata"] <- "Augochlorella aurata"
-data$Genus[data$name == "Augochlorella aurata"] <- "Augochlorella"
-
-data$name[data$name == 'Ceratina dupla/mikmaqi/calcarata' | 
-            data$name == 'Ceratina calcarata/mikmaqi' | 
-            data$name == 'Ceratina dupla/mikmaqi' | 
-            data$name == 'Ceratina mikmaqi/calcarata'] <- 'Ceratina calcarata/dupla/mikmaqi'
-
-#fix duplicate names for occurrences with multiple IDs (list needs to be in same order)
-data$name[data$name == 'Halictus poeyi/ligatus'] <- 'Halictus ligatus/poeyi'
-data$name[data$name == 'Sphecodes cressonii/atlantis'] <- 'Sphecodes atlantis/cressonii'
-
-
-#remove individuals that were only identified to genus
-data <- data[!(grepl(data$name, pattern= "species") | 
-                 grepl(data$name, pattern = "sp.") | 
-                 grepl(data$name, pattern = "_sp") | 
-                 grepl(data$name, pattern = "interesting") | 
-                 grepl(data$name, pattern = "male")),]
-
-#remove Andrena observations recorded to sub-genus, but not species
-data <- data[!data$name %in% c('Andrena (Melandrena)', 'Andrena (Scrapteropsis)',
-                               'Andrena (Trachandrena)', 'Andrena melandrena'),]
-
-#remove observations with NA recorded as species (only ID'd to genus)
-data <- data[!is.na(data$species),]
-
-#replace data$NTraps == 'numerous' to NA
-data$NTraps[data$NTraps == 'numerous' & !is.na(data$NTraps)] <- NA
-data$NTraps[data$NTraps == '~130' & !is.na(data$NTraps)] <- 130
-
+####translate date and time, remove occurrences with no recorded date
 
 #import date and time variables in R format
 startdate <- fread(paste(datefolder, '/startdate.csv', sep=""), header=T)
@@ -100,11 +32,16 @@ takeout <- which(is.na(enddate$identifier))
 enddate <- enddate[!takeout,]
 enddate$identifier <- gsub(enddate$identifier, pattern= "http://www.discoverlife.org/mp/20l?id=", replacement="", fixed=T)
 
-data <- merge(data, startdate)
-data <- merge(data, enddate)
+#take out duplicated rows
+enddate <- dplyr::filter(enddate, !duplicated(identifier))
+startdate <- dplyr::filter(startdate, !duplicated(identifier))
 
-#remove specimens that do not have a date recorded
-data <- data[!is.na(data$startdate),]
+#merge dates with bee occurrence data
+data <- merge(data, startdate, all.x=T)
+data <- merge(data, enddate, all.x=T)
+
+#remove specimens that do not have a start or end date recorded
+data <- data[!(is.na(data$startdate) & is.na(data$enddate)),]
 
 #convert dates to R 'Date' format
 data$enddate_num <- as.Date(data$enddate, format='%Y-%m-%d %z')
@@ -179,6 +116,197 @@ data$SampleType[grepl(data$note, pattern= "vane trap")] <- 'vane trap'
 data$SampleType[grepl(data$note, pattern= "hand net")] <- 'hand net'
 data$SampleType[grepl(data$field_note, pattern= "hand collected") | data$field_note == 'hand net' | 
                   grepl(data$field_note, pattern= "hand caught") | grepl(data$field_note, pattern= "netted")| grepl(data$field_note, pattern= "caught by hand")] <- 'hand net'
+
+#####fix name, Genus, species columns
+
+#capitalize genus columns
+data$Genus <- R.utils::capitalize(data$Genus)
+
+#fix capitalization so species names match
+data$species <- R.utils::decapitalize(data$species)
+
+#save Droege original name (useful for occurrences with multiple names)
+data$original_name <- data$name
+
+#fix spelling errors in genus name
+data$Genus[data$Genus %in% c("Adrena", "Amdrema", "Anderna")] <- 'Andrena'
+data$Genus[data$Genus %in% c("Haclictus", "Halitcus")] <- 'Halictus'
+
+#add cleaned up genus and species name together
+data$name <- paste(data$Genus, data$species, sep=" ")
+
+
+#fix species mis-spellings
+data$name[data$name == 'Andrena morisonella'] <- 'Andrena morrisonella'
+data$name[data$name == 'Andrena puni'] <- 'Andrena pruni'
+data$name[data$name == "Bombus binaculatus"] <- "Bombus bimaculatus"
+data$name[data$name == "Bombus imaptiens"] <- "Bombus impatiens"
+data$name[data$name == 'Ceratina miqmaki'] <- 'Ceratina mikmaqi'
+data$name[data$name == 'Ceratina deformed_calcarata'] <- 'Ceratina calcarata'
+data$name[data$name == "Lasioglossum brikmanni"] <- "Lasioglossum birkmanni"
+data$name[data$name == "Lasioglossum coeropsis"] <- "Lasioglossum coreopsis"
+data$name[data$name == "Lasioglossum geminum"] <- "Lasioglossum geminatum"
+data$name[data$name == "Nomada luteolodies"] <- "Nomada luteoloides"
+data$name[data$name == "Osmia atriventis"] <- "Osmia atriventris"
+data$name[data$name == "Osmia conjucta"] <- "Osmia conjuncta"
+data$name[data$name == "Nomada sayi/illinoense"] <- "Nomada sayi/illinoensis"
+data$name[data$name == "Megachile apicata"] <- "Megachile apicalis"
+data$name[data$name == "Melissodes tineta"] <- "Melissodes tinctus"
+data$name[data$name == "Osmia callinsia"] <- "Osmia collinsiae"
+
+
+#fix incorrect genus listed
+data$name[data$name == "Augochlora aurata"] <- "Augochlorella aurata"
+data$name[data$name == "Andrena bruneri"] <- "Lasioglossum bruneri"
+data$name[data$name == "Andrena hitchensi"] <- "Lasioglossum hitchensi"
+data$name[data$name == "Ceratina callidum"] <- "Lasioglossum callidum"
+data$name[data$name == "Lasioglossum aurata"] <- "Augochlorella aurata"
+data$name[data$name == "Lasioglossum carlini"] <- "Andrena carlini"
+data$name[data$name == "Lasioglossum conjuncta"] <- "Osmia conjuncta"
+data$name[data$name == "Lasioglossum perplexa"] <- "Andrena perplexa"
+data$name[data$name == "Melissodes nivalis"] <- "Andrena nivalis"
+data$name[data$name == "Nomada lustrans"] <- "Lasioglossum lustrans"
+data$name[data$name == "Nomada personata"] <- "Andrena personata"
+
+#fix duplicate names for occurrences with multiple IDs (list needs to be in same order)
+data$name[data$name == 'Andrena arabis/algida'] <- 'Andrena algida/arabis'
+data$name[data$name == 'Andrena morrisonella/imitatrix'] <- 'Andrena imitatrix/morrisonella'    
+data$name[data$name == 'Andrena tridens/erythronii'] <- 'Andrena erythronii/tridens'
+
+data$name[data$name == 'Ceratina calcarata/mikmaqi/dupla'|
+          data$name == 'Ceratina dupla/mikmaqi/calcarata' | 
+          data$name == 'Ceratina dupla/calcarata/mikmaqi' | 
+          data$name == 'Ceratina mikmaqi/calcarata/dupla'|
+          data$name == 'Ceratina mikmaqi/dupla/calcarata'] <- 'Ceratina calcarata/dupla/mikmaqi'
+
+data$name[data$name == 'Ceratina dupla/calcarata'] <- 'Ceratina calcarata/dupla'
+data$name[data$name == 'Ceratina mikmaqi/calcarata'] <- 'Ceratina calcarata/mikmaqi'
+data$name[data$name == 'Ceratina mikmaqi/dupla'] <- 'Ceratina dupla/mikmaqi'
+
+data$name[data$name == 'Coelioxys sayi/octodentata'] <- 'Coelioxys octodentata/sayi'
+data$name[data$name == 'Halictus poeyi/ligatus'] <- 'Halictus ligatus/poeyi'
+data$name[data$name == 'Hoplitis producta/pilosifrons'] <- 'Hoplitis pilosifrons/producta'
+data$name[data$name == 'Hylaeus modestus/affinis'] <- 'Hylaeus affinis/modestus'
+data$name[data$name == 'Lasioglossum rohweri/admirandum'] <- 'Lasioglossum admirandum/rohweri'
+data$name[data$name == 'Lasioglossum weemsi/hitchensi'] <- 'Lasioglossum hitchensi/weemsi'
+data$name[data$name == 'Lasioglossum smilacinae/lineatulum'] <- 'Lasioglossum lineatulum/smilacinae'
+data$name[data$name == 'Megachile mendica/brevis'] <- 'Megachile brevis/mendica'
+data$name[data$name == 'Melissodes nivea/agilis'] <- 'Melissodes agilis/nivea'
+data$name[data$name == 'Melissodes fumosa/boltoniae'] <- 'Melissodes boltoniae/fumosa'
+data$name[data$name == 'Melissodes subillata/illata'] <- 'Melissodes illata/subillata'
+data$name[data$name == 'Nomada sayi/illinoensis'] <- 'Nomada illinoensis/sayi'
+data$name[data$name == 'Nomada sulphurata/luteola'] <- 'Nomada luteola/sulphurata'
+data$name[data$name == 'Osmia taurus/cornifrons'] <- 'Osmia cornifrons/taurus'
+data$name[data$name == 'Osmia pumila/atriventris'] <- 'Osmia atriventris/pumila'
+
+data$name[data$name == 'Sphecodes atlantis/cressonii/banksii' | 
+            data$name == 'Sphecodes banksii/cressonii/atlantis'|
+            data$name == 'Sphecodes banksii/atlantis/cressonii'|
+            data$name == 'Sphecodes cressonii/banksii/atlantis'|
+            data$name == 'Sphecodes cressonii/atlantis/banksii'] <- 'Sphecodes atlantis/banksii/cressonii'
+
+data$name[data$name == 'Sphecodes banksii/atlantis'] <- 'Sphecodes atlantis/banksii'
+data$name[data$name == 'Sphecodes cressonii/atlantis'] <- 'Sphecodes atlantis/cressonii'
+data$name[data$name == 'Sphecodes cressonii/banksii'] <- 'Sphecodes banksii/cressonii'
+
+
+#collapse names into applicable grouped names
+data$grouped_name <- data$name
+
+data$grouped_name[data$grouped_name == 'Andrena arabis'|
+          data$grouped_name == 'Andrena algida'] <- 'Andrena algida/arabis'
+
+data$grouped_name[data$grouped_name == 'Andrena imitatrix'|
+          data$grouped_name == 'Andrena morrisonella'] <- 'Andrena imitatrix/morrisonella'    
+
+data$grouped_name[data$grouped_name == 'Andrena erythronii'|
+          data$grouped_name == 'Andrena tridens'] <- 'Andrena erythronii/tridens'
+
+
+data$grouped_name[data$grouped_name == 'Ceratina calcarata/dupla'|
+          data$grouped_name == 'Ceratina calcarata/mikmaqi' | 
+          data$grouped_name == 'Ceratina dupla/mikmaqi'|
+          data$grouped_name == 'Ceratina calcarata'|
+          data$grouped_name == 'Ceratina dupla'|
+          data$grouped_name == 'Ceratina mikmaqi'] <- 'Ceratina calcarata/dupla/mikmaqi'
+
+data$grouped_name[data$grouped_name == 'Coelioxys octodentata'|
+          data$grouped_name == 'Coelioxys sayi'] <- 'Coelioxys octodentata/sayi'
+
+data$grouped_name[data$grouped_name == 'Halictus poeyi' |
+          data$grouped_name == 'Halictus ligatus'] <- 'Halictus ligatus/poeyi'
+
+data$grouped_name[data$grouped_name == 'Hoplitis producta'|
+          data$grouped_name == 'Hoplitis pilosifrons'] <- 'Hoplitis pilosifrons/producta'
+
+data$grouped_name[data$grouped_name == 'Hylaeus affinis'|
+          data$grouped_name == 'Hylaeus modestus'] <- 'Hylaeus affinis/modestus'
+
+data$grouped_name[data$grouped_name == 'Lasioglossum admirandum'|
+          data$grouped_name == 'Lasioglossum rohweri'] <- 'Lasioglossum admirandum/rohweri'
+
+data$grouped_name[data$grouped_name == 'Lasioglossum hitchensi'|
+          data$grouped_name == 'Lasioglossum weemsi'] <- 'Lasioglossum hitchensi/weemsi'
+
+data$grouped_name[data$grouped_name == 'Lasioglossum lineatulum'|
+          data$grouped_name == 'Lasioglossum smilacinae'] <- 'Lasioglossum lineatulum/smilacinae'
+
+data$grouped_name[data$grouped_name == 'Megachile mendica'|
+          data$grouped_name == 'Megachile brevis'] <- 'Megachile brevis/mendica'
+
+data$grouped_name[data$grouped_name == 'Melissodes agilis'|
+          data$grouped_name == 'Melissodes nivea'] <- 'Melissodes agilis/nivea'
+
+data$grouped_name[data$grouped_name == 'Melissodes boltoniae'|
+          data$grouped_name == 'Melissodes fumosa'] <- 'Melissodes boltoniae/fumosa'
+
+
+data$grouped_name[data$grouped_name == 'Melissodes illata'|
+          data$grouped_name == 'Melissodes subillata'] <- 'Melissodes illata/subillata'
+
+data$grouped_name[data$grouped_name == 'Nomada illinoensis'|
+          data$grouped_name == 'Nomada sayi'] <- 'Nomada illinoensis/sayi'
+
+data$grouped_name[data$grouped_name == 'Nomada luteola'|
+          data$grouped_name == 'Nomada sulphurata'] <- 'Nomada luteola/sulphurata'
+
+data$grouped_name[data$grouped_name == 'Osmia cornifrons'|
+          data$grouped_name == 'Osmia taurus'] <- 'Osmia cornifrons/taurus'
+
+data$grouped_name[data$grouped_name == 'Osmia atriventris'|
+          data$grouped_name == 'Osmia pumila'] <- 'Osmia atriventris/pumila'
+
+
+data$grouped_name[data$grouped_name == 'Sphecodes atlantis/banksii'|
+          data$grouped_name == 'Sphecodes atlantis/cressonii' | 
+          data$grouped_name == 'Sphecodes banksii/cressonii'|
+          data$grouped_name == 'Sphecodes atlantis'|
+          data$grouped_name == 'Sphecodes banksii'|
+          data$grouped_name == 'Sphecodes cressonii'] <- 'Sphecodes atlantis/banksii/cressonii'
+
+
+#remove individuals that were only identified to genus & listed as 'male'
+data <- data[!grepl(data$name, pattern = " male", fixed=T),]
+
+#remove observations recorded to sub-genus, but not species
+data <- data[!data$name %in% c('Andrena (Melandrena)', 'Andrena (Scrapteropsis)',
+                               'Andrena (Trachandrena)', 'Andrena melandrena',
+                               'Andrena (Microandrena)', 'Andrena (Scaphandrena)',
+                               'Lasioglossum (Dialictus)', 'Lasioglossum (Evylaeus)'),]
+
+#remove observations with NA recorded as species (only ID'd to genus)
+if (remove_togenus == T) {
+  data <- data[!is.na(data$species),]
+}
+
+#remove occurrences of species names that do not exist on Discover Life (or no other occurrences globally)
+to_remove <- c('Lasioglossum melanopus', 'Hylaeus cressonii', 'Lasioglossum kevensi', 'Osmia composita')
+data <- dplyr::filter(data, !name %in% to_remove)
+
+#translate updated species names to 'Genus' and 'species' columns
+data <- dplyr::select(data, -Genus, -species) %>%
+        tidyr::separate(name, sep=" ", into=c("Genus", 'species'), remove=F) #add genus and species columns
+
 
 #remove rows with duplicated identifiers (duplicate specimens)
 data <- dplyr::filter(data, !duplicated(identifier))
