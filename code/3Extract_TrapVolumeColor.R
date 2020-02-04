@@ -7,31 +7,6 @@ library(dplyr); library(tidyr); library(stringr); library(reshape2); library(dat
 mdde <- read.csv('./data/Droege_MDDE_cleaned.csv')
 
 ##### Part One: Manually clean up some string patterns in field notes that cause issues for regular expressions (below)
-view2 <- dplyr::filter(mdde, grepl(mdde$field_note, pattern='road', fixed=T) | grepl(mdde$field_note, pattern='field', fixed=T)) %>%
-         dplyr::filter(year == '2005')
-
-view2 <- dplyr::mutate(view2, field_note = gsub(view2$field_note, pattern= " ;", replacement=";", fixed=T)) %>%
-         dplyr::filter(grepl(view2$field_note, pattern= "blue;", fixed=T) | grepl(view2$field_note, pattern= "yellow;", fixed=T) | 
-                  grepl(view2$field_note, pattern= "white;", fixed=T) | grepl(view2$field_note, pattern= "white ;", fixed=T) |
-                   grepl(view2$field_note, pattern= "yellow ;", fixed=T) | grepl(view2$field_note, pattern= "blue ;", fixed=T) |
-                   grepl(view2$field_note, pattern= "white  ;", fixed=T))
-
-#manually clean up some string patterns in TransectID and field notes 
-view2 <- dplyr::mutate(view2, TransectID = if_else(grepl(view2$field_note, pattern='road', fixed=T), paste0(view2$SamplEvent, "Troad"), 
-                                            paste0(view2$SamplEvent, "Tfield"))) %>%
-         dplyr::mutate(field_note = dplyr::if_else(TransectID %in% c("MD7e9dcce0Tfield", 
-                                                                     "MD1ce30960Tfield", 
-                                                                     "MD157184c2Troad",
-                                                                     "MD28df34b4Troad",
-                                                                     "MDae4ed8e3Troad"), "5 white, 5 yellow, 5 blue; 1 missing",
-                                     dplyr::if_else(TransectID %in% c("MDc9c94b23Tfield",
-                                                                      "MD7c2c2431Tfield",
-                                                                      "MD6b0d5076Tfield"), "5 white, 5 yellow, 5 blue; 2 missing",
-                                     "5 white, 5 yellow, 5 blue; 0 missing")))
-
-#put cleaned up observations back into dataset
-mdde <- filter(mdde, !SiteID_Year %in% view2$SiteID_Year) %>%
-        full_join(view2)
 
 #manually change field notes formatting that is not handled by 'extract color' function
 mdde$field_note <- gsub(mdde$field_note, pattern='10 bowls each fl yellow fl blue white', replacement="10 fl yellow, 10 fl blue, 10 white", fixed=T) %>%

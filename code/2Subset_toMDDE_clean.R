@@ -65,7 +65,7 @@ mdde <- mdde[!mdde$name %in% c('Lasioglossum incompletum'),]
 #take out specimens that were not sampled with pan traps?
 mdde <- mdde[mdde$SampleType %in% c('pan trap', 'in field note'),]
 
-
+##### Part 3. Create abundance column, convert dates to R friendly format
 #add abundance value
 mdde$Abundance <- 1
 
@@ -88,5 +88,34 @@ mdde$biweek <- round(mdde$mid_DOY/14, digits=0)
 
 #reclassify 'year' as a factor rather than integer
 mdde$year <- as.factor(mdde$year)
+
+
+##### Part 4. Manually reassign TransectID for a set of sites (same study) that used 1 GPS point for two habitat types
+
+view2 <- dplyr::filter(mdde, grepl(mdde$field_note, pattern='road', fixed=T) | grepl(mdde$field_note, pattern='field', fixed=T)) %>%
+  dplyr::filter(year == '2005')
+
+view2 <- dplyr::mutate(view2, field_note = gsub(view2$field_note, pattern= " ;", replacement=";", fixed=T)) %>%
+  dplyr::filter(grepl(view2$field_note, pattern= "blue;", fixed=T) | grepl(view2$field_note, pattern= "yellow;", fixed=T) | 
+                  grepl(view2$field_note, pattern= "white;", fixed=T) | grepl(view2$field_note, pattern= "white ;", fixed=T) |
+                  grepl(view2$field_note, pattern= "yellow ;", fixed=T) | grepl(view2$field_note, pattern= "blue ;", fixed=T) |
+                  grepl(view2$field_note, pattern= "white  ;", fixed=T))
+
+#manually clean up some string patterns in TransectID and field notes 
+view2 <- dplyr::mutate(view2, TransectID = if_else(grepl(view2$field_note, pattern='road', fixed=T), paste0(view2$SamplEvent, "Troad"), 
+                                                   paste0(view2$SamplEvent, "Tfield"))) %>%
+  dplyr::mutate(field_note = dplyr::if_else(TransectID %in% c("MD7e9dcce0Tfield", 
+                                                              "MD1ce30960Tfield", 
+                                                              "MD157184c2Troad",
+                                                              "MD28df34b4Troad",
+                                                              "MDae4ed8e3Troad"), "5 white, 5 yellow, 5 blue; 1 missing",
+                                            dplyr::if_else(TransectID %in% c("MDc9c94b23Tfield",
+                                                                             "MD7c2c2431Tfield",
+                                                                             "MD6b0d5076Tfield"), "5 white, 5 yellow, 5 blue; 2 missing",
+                                                           "5 white, 5 yellow, 5 blue; 0 missing")))
+
+#put cleaned up observations back into dataset
+mdde <- filter(mdde, !SiteID_Year %in% view2$SiteID_Year) %>%
+  full_join(view2)
 
 write.csv(mdde, './data/Droege_MDDE_cleaned.csv')
