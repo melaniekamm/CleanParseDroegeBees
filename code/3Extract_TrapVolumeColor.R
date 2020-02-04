@@ -128,7 +128,6 @@ trans_check <-  dplyr::select(storecolor, TransectID, SiteID, year,state, field_
                 filter(!duplicated(TransectID)) %>%
                 filter( year %in% c('2004', '2005') & state == 'District of Columbia')
 
-View(dplyr::filter(trans_check, !duplicated(SiteID)))
 #assign colors to a few observations where trap color could be assumed from field notes indicating all specimens were the same study
 #washington dc study field_notes all same style, and other observations record 'b', 'y', 'w' characters in other words as colors
 storecolor$isblue[is.na(storecolor$isblue) & storecolor$year %in% c('2004', '2005') & 
@@ -259,7 +258,7 @@ storecolor <- dplyr::filter(storecolor2, MaxNTraps > 0) %>%
 
 storecolor <- ungroup(storecolor) %>%
               dplyr::na_if('no')
-  
+
 write.csv(storecolor, './data/Droege_MDDE_subset_withtrapinfo.csv')
 
 #rm(list=ls())
