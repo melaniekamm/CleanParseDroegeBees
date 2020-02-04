@@ -118,4 +118,9 @@ view2 <- dplyr::mutate(view2, TransectID = if_else(grepl(view2$field_note, patte
 mdde <- filter(mdde, !SiteID_Year %in% view2$SiteID_Year) %>%
   full_join(view2)
 
+#manually fix some transect IDs that are incorrect (assigned as two transects, but actually only one)
+mdde$TransectID[mdde$SamplEvent == 'MD79cd0211'] <- "MDbfbf9079"
+mdde$TransectID[mdde$SamplEvent == 'MDf0f5117e'] <- "MD5f0275ef"
+
+
 write.csv(mdde, './data/Droege_MDDE_cleaned.csv')
