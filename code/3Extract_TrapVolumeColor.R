@@ -261,4 +261,4 @@ storecolor <- ungroup(storecolor) %>%
 
 write.csv(storecolor, './data/Droege_MDDE_subset_withtrapinfo.csv')
 
-#rm(list=ls())
+rm(list=ls())

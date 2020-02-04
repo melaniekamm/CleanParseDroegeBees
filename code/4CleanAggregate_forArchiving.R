@@ -8,7 +8,7 @@ library(dplyr)
 #Dataset #1: All Maryland/Delaware/DC occurences
 #take out some redundant columns
 mdde_toarchive <- dplyr::select(mdde,-X, -V1, -startdate, -enddate, -middate_num, -mid_DOY, -SPECIMEN,
-                -month, -week, -week2, -biweek, -eventDate, -trapdays, -species) %>%
+                -month, -week, -week2, -biweek, -eventDate, -trapdays) %>%
         dplyr::rename(startdate=startdate_num, enddate=enddate_num, modif_fieldnote=field_note,
                 modif_note=note, field_note=orig_field_note, note=orig_note) %>%
         dplyr::select(identifier, id, TransectID, SamplEvent,  SiteID, SiteID_Year, year,
@@ -19,12 +19,12 @@ mdde_toarchive <- dplyr::select(mdde,-X, -V1, -startdate, -enddate, -middate_num
                 coordinateUncertaintyInMeters,
                 field_note, note, modif_fieldnote, modif_note,
                 SampleType, TrapLiquid, TrapColor, TrapVolume, NTraps,
-                everything(),  -elevation)
+                dplyr::everything(),  -elevation)
 
 #Dataset #2: Maryland/Delaware/DC occurences with sampling info
 
 #reorder columns and take out some redundant columns
-storecolor_archive <- dplyr::select(storecolor,-X) %>%
+storecolor_toarchive <- dplyr::select(storecolor,-X) %>%
               dplyr::select(-month, -week, -week2, -biweek, -eventDate, -Nmatch, -VolumesAgree, 
                             -startdate, -enddate, -middate_num, -mid_DOY, -SPECIMEN, -Nreported) %>%
               dplyr::rename(startdate=startdate_num, enddate=enddate_num, modif_fieldnote=field_note,
@@ -50,7 +50,7 @@ transect <- dplyr::rename(transect, TctColor=Color, TctVolume=TrapVolume) %>%
                           trapdays, NTrapsFinal, Abundance, AbundDayTrap)
 
 write.csv(mdde_toarchive,'./data/to_archive/1OccurrenceLevel_AllBees.csv')
-write.csv(storecolor_archive,'./data/to_archive/2OccurrenceLevel_WithTrapInfo.csv')
+write.csv(storecolor_toarchive,'./data/to_archive/2OccurrenceLevel_WithTrapInfo.csv')
 write.csv(transect,'./data/to_archive/3TransectLevel_WithTrapInfo.csv')
 
 #sample for technical validation (check color and volume matches field notes)
