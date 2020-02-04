@@ -5,7 +5,7 @@ storecolor <- read.csv('./data/Droege_MDDE_subset_withtrapinfo.csv')
 
 source('./code/functions/subsum_to_siteyear_transect.R')
 library(dplyr)
-#Dataset #1: All Maryland/Delaware/DC occurences
+#Dataset #1: All Maryland/Delaware/DC occurrences
 #take out some redundant columns
 mdde_toarchive <- dplyr::select(mdde,-X, -V1, -startdate, -enddate, -middate_num, -mid_DOY, -SPECIMEN,
                 -month, -week, -week2, -biweek, -eventDate, -trapdays) %>%
@@ -21,7 +21,7 @@ mdde_toarchive <- dplyr::select(mdde,-X, -V1, -startdate, -enddate, -middate_num
                 SampleType, TrapLiquid, TrapColor, TrapVolume, NTraps,
                 dplyr::everything(),  -elevation)
 
-#Dataset #2: Maryland/Delaware/DC occurences with sampling info
+#Dataset #2: Maryland/Delaware/DC occurrences with sampling info
 
 #reorder columns and take out some redundant columns
 storecolor_toarchive <- dplyr::select(storecolor,-X) %>%
