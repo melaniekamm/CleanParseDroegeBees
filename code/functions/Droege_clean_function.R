@@ -306,6 +306,8 @@ data$grouped_name[data$grouped_name == 'Sphecodes atlantis/banksii'|
 #remove individuals that were only identified to genus & listed as 'male'
 data <- data[!grepl(data$name, pattern = " male", fixed=T),]
 
+if (remove_togenus == T) {
+  
 #remove observations recorded to sub-genus, but not species
 data <- data[!data$name %in% c('Andrena (Melandrena)', 'Andrena (Scrapteropsis)',
                                'Andrena (Trachandrena)', 'Andrena melandrena',
@@ -313,7 +315,6 @@ data <- data[!data$name %in% c('Andrena (Melandrena)', 'Andrena (Scrapteropsis)'
                                'Lasioglossum (Dialictus)', 'Lasioglossum (Evylaeus)'),]
 
 #remove observations with NA recorded as species (only ID'd to genus)
-if (remove_togenus == T) {
   data <- data[!is.na(data$species),]
 }
 

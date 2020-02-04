@@ -59,8 +59,9 @@ mdde <- mdde[!grepl(mdde$name, pattern=" NA", fixed=T),]
 mdde$name[mdde$name == "Agapostemon angelicus/texanus"] <- "Agapostemon texanus" #Agapostemon angelicus is not found in Mid-Atlantic US
 mdde$name[mdde$name == "Pseudopanurgus rudbeckiae"] <- "Pseudopanurgus near rudbeckiae"
 
-#species not in our region
+# #species not in our region
 mdde <- mdde[!mdde$name %in% c('Lasioglossum incompletum'),]
+
 
 #take out specimens that were not sampled with pan traps?
 mdde <- mdde[mdde$SampleType %in% c('pan trap', 'in field note'),]
@@ -121,6 +122,5 @@ mdde <- filter(mdde, !SiteID_Year %in% view2$SiteID_Year) %>%
 #manually fix some transect IDs that are incorrect (assigned as two transects, but actually only one)
 mdde$TransectID[mdde$SamplEvent == 'MD79cd0211'] <- "MDbfbf9079"
 mdde$TransectID[mdde$SamplEvent == 'MDf0f5117e'] <- "MD5f0275ef"
-
 
 write.csv(mdde, './data/Droege_MDDE_cleaned.csv')
