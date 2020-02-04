@@ -103,10 +103,6 @@ mdde$note <-  gsub(mdde$note, pattern='bombus', replacement="BOMBUS", fixed=T) %
         gsub(pattern='*one cup was empty', replacement="1 empty", fixed=T) %>%
         gsub(pattern='1 white cup destroyed', replacement="1 empty", fixed=T)
 
-#manually fix some transect IDs that are incorrect (assigned as two transects, but actually only one)
-mdde$TransectID[mdde$SamplEvent == 'Ma1942_2002-07-11_2002-07-11'] <- "Ma1942_2002-07-11_2002-07-11_T229"
-mdde$TransectID[mdde$SamplEvent == 'Ma2657_2002-08-25_2002-08-25'] <- "Ma2657_2002-08-25_2002-08-25_T218"
-
 
 ##### Part Two: Extract trap color, trap number, and number of missing traps from field_note and note columns for each specimen
 #create binary color variables (i.e. isBlue) to enable summarized color by transect or site
@@ -128,15 +124,22 @@ storecolor <-  dplyr::mutate(storecolor, isblue=dplyr::if_else(TrapColor == 'blu
                isFLpaleblue=dplyr::if_else(TrapColor == 'pale blue-uv','FLPaleBlue', "no"))
 
 #identify transects that are missing color information
-trans_check <-  dplyr::select(storecolor, TransectID, year,state, field_note, note, starts_with('is'), nmissing) %>%
+trans_check <-  dplyr::select(storecolor, TransectID, SiteID, year,state, field_note, note, starts_with('is'), nmissing) %>%
                 filter(!duplicated(TransectID)) %>%
                 filter( year %in% c('2004', '2005') & state == 'District of Columbia')
 
+View(dplyr::filter(trans_check, !duplicated(SiteID)))
 #assign colors to a few observations where trap color could be assumed from field notes indicating all specimens were the same study
 #washington dc study field_notes all same style, and other observations record 'b', 'y', 'w' characters in other words as colors
-storecolor$isblue[is.na(storecolor$isblue) & storecolor$year %in% c('2004', '2005') & storecolor$state == 'District of Columbia' & !storecolor$SiteID %in% c('Di1897', 'Di1955', 'Di1883', 'Di2083', 'Di2100') ]  <- 'blue'
-storecolor$isyellow[is.na(storecolor$isyellow) & storecolor$year %in% c('2004', '2005') & storecolor$state == 'District of Columbia' & !storecolor$SiteID %in% c('Di1897', 'Di1955', 'Di1883', 'Di2083', 'Di2100') ]  <- 'yellow'
-storecolor$iswhite[is.na(storecolor$iswhite) & storecolor$year %in% c('2004', '2005') & storecolor$state == 'District of Columbia' & !storecolor$SiteID %in% c('Di1897', 'Di1955', 'Di1883', 'Di2083', 'Di2100') ]  <- 'white'
+storecolor$isblue[is.na(storecolor$isblue) & storecolor$year %in% c('2004', '2005') & 
+                    storecolor$state == 'District of Columbia' & 
+                    !storecolor$SiteID %in% c('DCbf0934a8', 'DC0199853a', 'DC27cac6c4', 'DC4deb18cf', 'DCb8f4b6c7') ]  <- 'blue'
+storecolor$isyellow[is.na(storecolor$isyellow) & storecolor$year %in% c('2004', '2005') & 
+                    storecolor$state == 'District of Columbia' & 
+                    !storecolor$SiteID %in% c('DCbf0934a8', 'DC0199853a', 'DC27cac6c4', 'DC4deb18cf', 'DCb8f4b6c7') ]  <- 'yellow'
+storecolor$iswhite[is.na(storecolor$iswhite) & storecolor$year %in% c('2004', '2005') & 
+                    storecolor$state == 'District of Columbia' & 
+                    !storecolor$SiteID %in%c('DCbf0934a8', 'DC0199853a', 'DC27cac6c4', 'DC4deb18cf', 'DCb8f4b6c7') ]  <- 'white'
 
 storecolor$iswhite[storecolor$note == 'groundworks farm, in wicomico county' & storecolor$field_note == "fl bl;fl yl;white; "] <- 'white'
 storecolor$isFLblue[storecolor$note == 'groundworks farm, in wicomico county' & storecolor$field_note == "fl bl;fl yl;white; "] <- 'FLblue'
@@ -259,4 +262,4 @@ storecolor <- ungroup(storecolor) %>%
   
 write.csv(storecolor, './data/Droege_MDDE_subset_withtrapinfo.csv')
 
-rm(list=ls())
+#rm(list=ls())
