@@ -26,7 +26,7 @@ locations <-  sf::st_as_sf(data, coords=c('longitude', 'latitude'), crs=4326, re
               sf::st_join(dplyr::select(states, STUSPS)) %>%
               dplyr::rename(state_code = STUSPS)
 
-data <- st_drop_geometry(locations)
+data <- sf::st_drop_geometry(locations)
 ####translate date and time, remove occurrences with no recorded date
 
 #import date and time variables in R format
