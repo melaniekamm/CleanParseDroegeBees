@@ -40,7 +40,7 @@ storecolor_toarchive <- dplyr::select(storecolor,-X) %>%
                             SampleType, TrapLiquid, TrapColor, TrapVolume, NTraps,
                             everything(),  -elevation)
 
-#Dataset 3: Bee abundance per transect & transect-level sampling method (only occurences with sampling effort)
+#Dataset 3: Bee abundance per transect & transect-level sampling method (only occurrences with sampling effort)
 transect <- subsum_to_siteyear_transect(df=storecolor,output='transect')
 
 #reorder columns and take out some redundant columns
