@@ -19,11 +19,14 @@ view2 <- dplyr::mutate(view2, field_note = gsub(view2$field_note, pattern= " ;",
 #manually clean up some string patterns in TransectID and field notes 
 view2 <- dplyr::mutate(view2, TransectID = if_else(grepl(view2$field_note, pattern='road', fixed=T), paste0(view2$SamplEvent, "Troad"), 
                                             paste0(view2$SamplEvent, "Tfield"))) %>%
-         dplyr::mutate(field_note = dplyr::if_else(TransectID %in% c("Ma2030_2005-09-07_2005-09-08Tfield", 'Ma2177_2005-09-08_2005-09-09Troad', 
-                                                        "Ma2200_2005-09-07_2005-09-08Tfield",
-                                                        "Ma2060_2005-09-17_2005-09-18Troad"), "5 white, 5 yellow, 5 blue; 1 missing",
-                                     dplyr::if_else(TransectID %in% c("Ma2265_2005-07-01_2005-07-02Tfield", "Ma2218_2005-09-02_2005-09-03Tfield",
-                                                               "Ma2308_2005-07-02_2005-07-03Tfield"), "5 white, 5 yellow, 5 blue; 2 missing",
+         dplyr::mutate(field_note = dplyr::if_else(TransectID %in% c("MD7e9dcce0Tfield", 
+                                                                     "MD1ce30960Tfield", 
+                                                                     "MD157184c2Troad",
+                                                                     "MD28df34b4Troad",
+                                                                     "MDae4ed8e3Troad"), "5 white, 5 yellow, 5 blue; 1 missing",
+                                     dplyr::if_else(TransectID %in% c("MDc9c94b23Tfield",
+                                                                      "MD7c2c2431Tfield",
+                                                                      "MD6b0d5076Tfield"), "5 white, 5 yellow, 5 blue; 2 missing",
                                      "5 white, 5 yellow, 5 blue; 0 missing")))
 
 #put cleaned up observations back into dataset
