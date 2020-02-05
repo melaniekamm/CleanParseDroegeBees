@@ -8,7 +8,7 @@ library(dplyr)
 #Dataset #1: All Maryland/Delaware/DC occurrences
 #take out some redundant columns
 mdde_toarchive <- dplyr::select(mdde,-X, -V1, -startdate, -enddate, -middate_num, -mid_DOY, -SPECIMEN,
-                -month, -week, -week2, -biweek, -eventDate, -trapdays) %>%
+                -month, -week, -week2, -biweek, -eventDate, -trapdays, -state_code) %>%
         dplyr::rename(startdate=startdate_num, enddate=enddate_num, modif_fieldnote=field_note,
                 modif_note=note, field_note=orig_field_note, note=orig_note) %>%
         dplyr::select(identifier, id, TransectID, SamplEvent,  SiteID, SiteID_Year, year,
@@ -26,7 +26,7 @@ mdde_toarchive <- dplyr::select(mdde,-X, -V1, -startdate, -enddate, -middate_num
 #reorder columns and take out some redundant columns
 storecolor_toarchive <- dplyr::select(storecolor,-X) %>%
               dplyr::select(-month, -week, -week2, -biweek, -eventDate, -Nmatch, -VolumesAgree, 
-                            -startdate, -enddate, -middate_num, -mid_DOY, -SPECIMEN, -Nreported) %>%
+                            -startdate, -enddate, -middate_num, -mid_DOY, -SPECIMEN, -Nreported, -state_code) %>%
               dplyr::rename(startdate=startdate_num, enddate=enddate_num, modif_fieldnote=field_note,
                      modif_note=note, field_note=orig_field_note, note=orig_note) %>%
               dplyr::select(identifier, id, TransectID, SamplEvent,  SiteID, SiteID_Year, year,
@@ -49,9 +49,9 @@ transect <- dplyr::rename(transect, TctColor=Color, TctVolume=TrapVolume) %>%
                           TctVolume, TctColor, ColorVolume, VolumeSimple, ColorSimple, 
                           trapdays, NTrapsFinal, Abundance, AbundDayTrap)
 
-write.csv(mdde_toarchive,'./data/to_archive/1OccurrenceLevel_AllBees.csv')
-write.csv(storecolor_toarchive,'./data/to_archive/2OccurrenceLevel_WithTrapInfo.csv')
-write.csv(transect,'./data/to_archive/3TransectLevel_WithTrapInfo.csv')
+write.csv(mdde_toarchive,'./data/to_archive/1OccurrenceLevel_AllBees.csv', row.names = F)
+write.csv(storecolor_toarchive,'./data/to_archive/2OccurrenceLevel_WithTrapInfo.csv', row.names = F)
+write.csv(transect,'./data/to_archive/3TransectLevel_WithTrapInfo.csv', row.names = F)
 
 #sample for technical validation (check color and volume matches field notes)
 # techval <- sample_n(storecolor, size=1000, replace=F) %>%
