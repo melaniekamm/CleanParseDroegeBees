@@ -57,5 +57,5 @@ library(Hmisc); library(R.utils); library(stringr)
 source('./code/functions/Droege_clean_function.R')
 clean_data <- clean_things(data=data, datefolder='./data/alldata_dates', remove_togenus=T)
 
-fwrite(clean_data, './data/DroegeAllData_clean.csv')
+write.csv(clean_data, './data/DroegeAllData_clean.csv')
 
