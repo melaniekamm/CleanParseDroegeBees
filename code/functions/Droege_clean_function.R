@@ -135,10 +135,20 @@ data$SampleType[grepl(data$field_note, pattern= "hand collected") | data$field_n
 
 #####fix name, Genus, species columns
 
+#fix species and Genus names that are merged together
+data$name[data$name == "Augochlorellagratiosa"] <- "Augochlorella gratiosa"
+data$name[data$name == "Chrysurapacifica"] <- "Chrysura pacifica"
+data$name[data$name == "Copestylumvittatum"] <- "Copestylum vittatum"
+data$name[data$name == "Eristalisobscurus"] <- "Eristalis obscurus"
+data$name[data$name == "Copestylummarginatum"] <- "Copestylum marginatum"
+data$name[data$name == "Autographaprecationis"] <- "Autographa precationis"
+data$name[data$name == "Coelioxysoctodentata"] <- "Coelioxys octodentata"
+
 #remove occurrences with no species names or duplicated names
 data <- dplyr::filter(data, name != '' & SPECIMEN != "") %>%
   dplyr::distinct(SPECIMEN, .keep_all = T) %>%
-  tidyr::separate(name, sep=" ", into=c("Genus", 'species'), remove=F) #add genus and species columns
+  tidyr::separate(name, sep=" ", into=c("Genus", 'species', 'sub_species'), remove=F) #add genus and species columns
+
 
 #capitalize genus columns
 data$Genus <- R.utils::capitalize(data$Genus)
@@ -153,8 +163,9 @@ data$orig_name <- data$name
 data$Genus[data$Genus %in% c("Adrena", "Amdrema", "Anderna")] <- 'Andrena'
 data$Genus[data$Genus %in% c("Haclictus", "Halitcus")] <- 'Halictus'
 
-#add cleaned up genus and species name together
-data$name <- paste(data$Genus, data$species, sep=" ")
+#add cleaned up genus and species name together (and sub_species where appropriate)
+data$name <- if_else(is.na(data$sub_species), paste(data$Genus, data$species, sep=" "),
+                     paste(data$Genus, data$species, data$sub_species, sep=" "))
 
 #fix species mis-spellings
 data$name[data$name == 'Andrena morisonella'] <- 'Andrena morrisonella'
@@ -302,6 +313,9 @@ data$grouped_name[data$grouped_name == 'Sphecodes atlantis/banksii'|
           data$grouped_name == 'Sphecodes banksii'|
           data$grouped_name == 'Sphecodes cressonii'] <- 'Sphecodes atlantis/banksii/cressonii'
 
+#species where some have sub_species and other observations do not should be one 'grouped species'
+data$grouped_name[data$name == 'Augochloropsis metallica fulgida'|
+                    data$name == 'Augochloropsis metallica metallica'] <- "Augochloropsis metallica" 
 
 #remove individuals that were only identified to genus & listed as 'male'
 data <- data[!grepl(data$name, pattern = " male", fixed=T),]
