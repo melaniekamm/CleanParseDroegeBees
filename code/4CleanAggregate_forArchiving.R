@@ -1,5 +1,4 @@
 rm(list=ls())
-clean_data <- read.csv('./data/DroegeAllData_clean.csv')
 mdde <- read.csv('./data/Droege_MDDE_cleaned.csv')
 storecolor <- read.csv('./data/Droege_MDDE_subset_withtrapinfo.csv')
 
@@ -20,6 +19,16 @@ mdde_toarchive <- dplyr::select(mdde,-X, -V1, -startdate, -enddate, -middate_num
                 field_note, note, modif_fieldnote, modif_note,
                 SampleType, TrapLiquid, TrapColor, TrapVolume, NTraps,
                 dplyr::everything(),  -elevation)
+
+#add family names
+family <- read.csv('./data/checking_bee_names/family_genera.csv')
+
+#generate list of unique species (original names and corrected) for table 
+species_list <- dplyr::filter(mdde_toarchive, !duplicated(orig_name)) %>%
+                dplyr::full_join(family) %>%
+                dplyr::select(orig_name, name,  grouped_name, Genus, species, Family) %>%
+                dplyr::mutate(name_altered = if_else(as.character(orig_name) == as.character(name), 'No', 'Yes'))
+write.csv(species_list, './data/checking_bee_names/original_names_species_list.csv', row.names = F)
 
 #Dataset #2: Maryland/Delaware/DC occurrences with sampling info
 
