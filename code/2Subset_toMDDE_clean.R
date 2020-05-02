@@ -59,6 +59,9 @@ mdde <- mdde[!grepl(mdde$name, pattern=" NA", fixed=T),]
 mdde$name[mdde$name == "Agapostemon angelicus/texanus"] <- "Agapostemon texanus" #Agapostemon angelicus is not found in Mid-Atlantic US
 mdde$name[mdde$name == "Pseudopanurgus rudbeckiae"] <- "Pseudopanurgus near rudbeckiae"
 
+#reset grouped names to match name 
+mdde$grouped_name[mdde$name == "Agapostemon texanus"] <- "Agapostemon texanus" #reset grouped name for A. texanus
+mdde$grouped_name[mdde$name == "Pseudopanurgus near rudbeckiae"] <- "Pseudopanurgus near rudbeckiae" 
 # #species not in our region
 mdde <- mdde[!mdde$name %in% c('Lasioglossum incompletum'),]
 
