@@ -321,14 +321,14 @@ data$grouped_name[data$name == 'Augochloropsis metallica fulgida'|
 data <- data[!grepl(data$name, pattern = " male", fixed=T),]
 
 if (remove_togenus == T) {
+    
+  #remove observations recorded to sub-genus, but not species
+  data <- data[!data$name %in% c('Andrena (Melandrena)', 'Andrena (Scrapteropsis)',
+                                 'Andrena (Trachandrena)', 'Andrena melandrena',
+                                 'Andrena (Microandrena)', 'Andrena (Scaphandrena)',
+                                 'Lasioglossum (Dialictus)', 'Lasioglossum (Evylaeus)'),]
   
-#remove observations recorded to sub-genus, but not species
-data <- data[!data$name %in% c('Andrena (Melandrena)', 'Andrena (Scrapteropsis)',
-                               'Andrena (Trachandrena)', 'Andrena melandrena',
-                               'Andrena (Microandrena)', 'Andrena (Scaphandrena)',
-                               'Lasioglossum (Dialictus)', 'Lasioglossum (Evylaeus)'),]
-
-#remove observations with NA recorded as species (only ID'd to genus)
+  #remove observations with NA recorded as species (only ID'd to genus)
   data <- data[!is.na(data$species),]
 }
 
@@ -337,12 +337,24 @@ to_remove <- c('Lasioglossum melanopus', 'Hylaeus cressonii', 'Lasioglossum keve
 data <- dplyr::filter(data, !name %in% to_remove)
 
 #translate updated species names to 'Genus' and 'species' columns
-data <- dplyr::select(data, -Genus, -species) %>%
-        tidyr::separate(name, sep=" ", into=c("Genus", 'species'), remove=F) #add genus and species columns
+data <- dplyr::select(data, -Genus, -species, -sub_species) %>%
+        tidyr::separate(name, sep=" ", into=c("Genus", 'species', 'sub_species'), remove=F) #add genus and species columns
 
+#put sub-species name back together with species
+data$species <- if_else(!is.na(data$sub_species), paste(data$species, data$sub_species, sep=" "),
+                        data$species)
 
 #remove rows with duplicated identifiers (duplicate specimens)
-data <- dplyr::filter(data, !duplicated(identifier))
+data <- dplyr::filter(data, !duplicated(identifier)) %>%
+        dplyr::select(-sub_species)
+
+#clean up 'IdentifiedBy' column
+ltable <- read.csv('./data/checking_bee_names/IdentifyingPeople.csv')
+
+for (i in 1:length(ltable$From)){
+  data <- dplyr::mutate(data, identifiedBy = if_else(grepl(identifiedBy, pattern= ltable$From[i]), 
+                                                    as.character(ltable$To[i]), identifiedBy))
+}
 
 return(data)
 }
