@@ -37,17 +37,11 @@ storecolor_toarchive <- dplyr::select(storecolor,-X) %>%
               dplyr::select(-month, -week, -week2, -biweek, -eventDate, -Nmatch, -VolumesAgree, 
                             -startdate, -enddate, -middate_num, -mid_DOY, -SPECIMEN, -Nreported, -state_code) %>%
               dplyr::rename(startdate=startdate_num, enddate=enddate_num, modif_fieldnote=field_note,
-                     modif_note=note, field_note=orig_field_note, note=orig_note) %>%
-              dplyr::select(identifier, id, TransectID, SamplEvent,  SiteID, SiteID_Year, year,
-                            name, Genus, species, grouped_name, orig_name, sex, identifiedBy,
-                            latitude, longitude, coordinateUncertaintyInMeters,
-                            time1, time2, startdate, enddate,
-                            trapdays,
-                            country, countryCode, state, county, municipality, habitat,
-                            coordinateUncertaintyInMeters,
-                            field_note, note, modif_fieldnote, modif_note,
-                            SampleType, TrapLiquid, TrapColor, TrapVolume, NTraps,
-                            everything(),  -elevation)
+                     modif_note=note, field_note=orig_field_note, note=orig_note)
+
+order <- read.csv('./data/names_order.csv')
+
+storecolor_toarchive <- dplyr::select(storecolor_toarchive, as.character(order[,1]))
 
 #Dataset 3: Bee abundance per transect & transect-level sampling method (only occurrences with sampling effort)
 transect <- subsum_to_siteyear_transect(df=storecolor,output='transect')

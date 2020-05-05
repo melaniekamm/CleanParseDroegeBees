@@ -135,6 +135,9 @@ data$SampleType[grepl(data$field_note, pattern= "hand collected") | data$field_n
 
 #####fix name, Genus, species columns
 
+#save Droege original name
+data$orig_name <- data$name
+
 #fix species and Genus names that are merged together
 data$name[data$name == "Augochlorellagratiosa"] <- "Augochlorella gratiosa"
 data$name[data$name == "Chrysurapacifica"] <- "Chrysura pacifica"
@@ -149,15 +152,12 @@ data <- dplyr::filter(data, name != '' & SPECIMEN != "") %>%
   dplyr::distinct(SPECIMEN, .keep_all = T) %>%
   tidyr::separate(name, sep=" ", into=c("Genus", 'species', 'sub_species'), remove=F) #add genus and species columns
 
-
 #capitalize genus columns
 data$Genus <- R.utils::capitalize(data$Genus)
 
 #fix capitalization so species names match
 data$species <- R.utils::decapitalize(data$species)
 
-#save Droege original name
-data$orig_name <- data$name
 
 #fix spelling errors in genus name
 data$Genus[data$Genus %in% c("Adrena", "Amdrema", "Anderna")] <- 'Andrena'
@@ -317,19 +317,23 @@ data$grouped_name[data$grouped_name == 'Sphecodes atlantis/banksii'|
 data$grouped_name[data$name == 'Augochloropsis metallica fulgida'|
                     data$name == 'Augochloropsis metallica metallica'] <- "Augochloropsis metallica" 
 
-#remove individuals that were only identified to genus & listed as 'male'
-data <- data[!grepl(data$name, pattern = " male", fixed=T),]
-
 if (remove_togenus == T) {
     
+  #remove individuals that were only identified to genus & listed as 'male'
+  out1 <- data[grepl(data$name, pattern = " male", fixed=T),]
+  
   #remove observations recorded to sub-genus, but not species
-  data <- data[!data$name %in% c('Andrena (Melandrena)', 'Andrena (Scrapteropsis)',
+  out2 <- data[data$name %in% c('Andrena (Melandrena)', 'Andrena (Scrapteropsis)',
                                  'Andrena (Trachandrena)', 'Andrena melandrena',
                                  'Andrena (Microandrena)', 'Andrena (Scaphandrena)',
                                  'Lasioglossum (Dialictus)', 'Lasioglossum (Evylaeus)'),]
   
   #remove observations with NA recorded as species (only ID'd to genus)
-  data <- data[!is.na(data$species),]
+  out3 <- data[is.na(data$species),]
+  
+  out <- rbind(out1, out2, out3)
+  
+  data <- data[!data$SPECIMEN %in% out$SPECIMEN,]
 }
 
 #remove occurrences of species names that do not exist on Discover Life (or no other occurrences globally)

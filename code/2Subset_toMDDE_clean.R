@@ -50,10 +50,8 @@ genera <- genera[order(genera$Abundance, decreasing=T),]
 isbee <- read.csv('./data/isbee_genera_populated.csv')
 
 #take out specimens that aren't bees
+notbees <- mdde[mdde$Genus %in% isbee$Genus[isbee$IsBee == 'N'],]
 mdde <- mdde[mdde$Genus %in% isbee$Genus[isbee$IsBee == 'Y' & isbee$NameVerified == 'Y'],]
-
-#take out specimens that aren't identifed to species
-mdde <- mdde[!grepl(mdde$name, pattern=" NA", fixed=T),]
 
 #correct or take out species from outside mid-Atlantic USA
 mdde$name[mdde$name == "Agapostemon angelicus/texanus"] <- "Agapostemon texanus" #Agapostemon angelicus is not found in Mid-Atlantic US
